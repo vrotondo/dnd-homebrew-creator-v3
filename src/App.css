@@ -1,0 +1,448 @@
+/* src/App.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background-color: #4a3f85;
+  color: white;
+  padding: 1rem 2rem;
+}
+
+.app-header h1 {
+  margin-bottom: 1rem;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+  margin-top: auto;
+}
+
+/* Form Styles */
+.form-container {
+  background-color: white;
+  border-radius: 5px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.button {
+  background-color: #4a3f85;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.button:hover {
+  background-color: #3a3265;
+}
+
+.button-secondary {
+  background-color: #6c757d;
+}
+
+.button-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Card Styles */
+.card {
+  background-color: white;
+  border-radius: 5px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #4a3f85;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nav-links {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-control.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-note {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 2rem;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-navigation {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.step-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.step-button.active {
+  border-bottom-color: #4a3f85;
+  font-weight: bold;
+}
+
+.step-content {
+  margin-bottom: 2rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Feature Management */
+.features-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.features-list {
+  margin-top: 1.5rem;
+}
+
+.feature-level-group {
+  margin-bottom: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.feature-level-group h5 {
+  color: #4a3f85;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card {
+  background-color: white;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.feature-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button-small {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.button-small:hover {
+  background-color: #5a6268;
+}
+
+.button-danger {
+  background-color: #dc3545;
+}
+
+.button-danger:hover {
+  background-color: #c82333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  color: #6c757d;
+}
+
+/* Preview Styles */
+.preview-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.class-preview {
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+}
+
+.class-title {
+  font-size: 2rem;
+  color: #4a3f85;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #4a3f85;
+  padding-bottom: 0.5rem;
+}
+
+.class-description {
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.class-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.detail-item h4 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: #4a3f85;
+}
+
+.class-features h4 {
+  font-size: 1.5rem;
+  color: #4a3f85;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+.feature-level {
+  margin-bottom: 1.5rem;
+}
+
+.feature-level h5 {
+  font-size: 1.25rem;
+  color: #4a3f85;
+  margin-bottom: 0.75rem;
+}
+
+.feature h6 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature {
+  margin-bottom: 1rem;
+}
+
+/* Proficiency Styles */
+.form-info {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #4a3f85;
+}
+
+.form-help {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+}
+
+.proficiency-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.proficiency-section h4 {
+  margin-bottom: 0.75rem;
+  color: #4a3f85;
+}
+
+.proficiency-section h5 {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #343a40;
+}
+
+.proficiency-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.checkbox-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.skill-selection {
+  margin-top: 0.5rem;
+}
+
+.skill-selection-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.small-input {
+  width: 4rem;
+}
+
+.skill-group {
+  margin-bottom: 1rem;
+}
+
+.skill-group h5 {
+  margin-bottom: 0.5rem;
+  color: #4a3f85;
+}
+
+/* Preview Styles for Proficiencies */
+.class-proficiencies {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.class-proficiencies h4 {
+  font-size: 1.5rem;
+  color: #4a3f85;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+.proficiency-item {
+  margin-bottom: 1rem;
+}
+
+.proficiency-item h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+  color: #4a3f85;
+}
