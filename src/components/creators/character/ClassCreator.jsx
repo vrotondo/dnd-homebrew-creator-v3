@@ -453,6 +453,8 @@ function ClassCreator({ itemId, onSave, onCancel }) {
     ];
 
     const renderStepContent = () => {
+        console.log("Rendering step:", currentStep);
+
         switch (currentStep) {
             case 1:
                 return (
@@ -783,7 +785,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                 </button>
                             </div>
 
-                            {classData.startingEquipment.default.length > 0 ? (
+                            {classData.startingEquipment?.default?.length > 0 ? (
                                 <ul className="equipment-list">
                                     {classData.startingEquipment.default.map((item, index) => (
                                         <li key={index} className="equipment-item">
@@ -850,7 +852,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                 </button>
                             </div>
 
-                            {classData.startingEquipment.options.length > 0 ? (
+                            {classData.startingEquipment?.options?.length > 0 ? (
                                 <div className="options-list">
                                     {classData.startingEquipment.options.map((optionSet, index) => (
                                         <div key={index} className="option-set">
@@ -1240,7 +1242,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                     <button
                         className="button"
                         onClick={handleSave}
-                        disabled={!isStepValid(1)} // Basic validation must pass to save
+                        disabled={!isStepValid(1)}
                     >
                         Save Class
                     </button>
