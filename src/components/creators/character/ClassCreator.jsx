@@ -1,7 +1,8 @@
 // src/components/creators/character/ClassCreator.jsx
 import { useState, useEffect } from 'react';
+import { saveClass, getClassById } from '../utils/storageService';
 
-function ClassCreator({ onCancel }) {
+function ClassCreator({ itemId, onSave, onCancel }) {
     const [currentStep, setCurrentStep] = useState(1);
     const [classData, setClassData] = useState({
         name: '',
@@ -356,6 +357,16 @@ function ClassCreator({ onCancel }) {
         setErrors(newErrors);
     }, [classData, touched]);
 
+    // Load existing class data if editing
+    useEffect(() => {
+        if (itemId) {
+            const existingClass = getClassById(itemId);
+            if (existingClass) {
+                setClassData(existingClass);
+            }
+        }
+    }, [itemId]);
+
     // Feature validation
     useEffect(() => {
         validateFeature();
@@ -399,17 +410,17 @@ function ClassCreator({ onCancel }) {
             return;
         }
 
-        // Save to localStorage
-        const savedClasses = JSON.parse(localStorage.getItem('dnd-homebrew-classes') || '[]');
-        const classToSave = {
-            ...classData,
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString()
-        };
+        // Save using storage service
+        const savedId = saveClass(classData);
 
-        localStorage.setItem('dnd-homebrew-classes', JSON.stringify([...savedClasses, classToSave]));
-        alert('Class saved successfully!');
-        onCancel && onCancel();
+        if (savedId) {
+            alert('Class saved successfully!');
+            if (typeof onSave === 'function') {
+                onSave();
+            }
+        } else {
+            alert('Failed to save class. Please try again.');
+        }
     };
 
     const nextStep = () => {
