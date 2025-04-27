@@ -1,6 +1,6 @@
 // src/components/creators/character/ClassCreator.jsx
 import { useState, useEffect } from 'react';
-import { saveClass, getClassById } from '../utils/storageService';
+import { saveClass, getClassById } from "../../../utils/storageService";
 
 function ClassCreator({ itemId, onSave, onCancel }) {
     const [currentStep, setCurrentStep] = useState(1);
