@@ -14,10 +14,21 @@ function ClassCreator({ onCancel }) {
         toolProficiencies: '',
         skillProficiencies: [],
         numSkillChoices: 2,
+        startingEquipment: {
+            default: [],
+            options: []
+        },
         features: []
     });
 
-    // New state for feature editing
+    // New state for equipment option editing
+    const [currentEquipmentItem, setCurrentEquipmentItem] = useState('');
+    const [currentOptionSet, setCurrentOptionSet] = useState({
+        option1: '',
+        option2: ''
+    });
+
+    // States for feature editing
     const [currentFeature, setCurrentFeature] = useState({
         name: '',
         level: 1,
@@ -169,6 +180,71 @@ function ClassCreator({ onCancel }) {
         setTouched(prev => ({ ...prev, weaponProficiencies: true }));
     };
 
+    // Equipment handlers
+    const handleEquipmentItemChange = (e) => {
+        setCurrentEquipmentItem(e.target.value);
+    };
+
+    const handleOptionChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentOptionSet(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const addDefaultEquipment = () => {
+        if (currentEquipmentItem.trim()) {
+            setClassData(prev => ({
+                ...prev,
+                startingEquipment: {
+                    ...prev.startingEquipment,
+                    default: [...prev.startingEquipment.default, currentEquipmentItem.trim()]
+                }
+            }));
+            setCurrentEquipmentItem('');
+        }
+    };
+
+    const removeDefaultEquipment = (index) => {
+        setClassData(prev => ({
+            ...prev,
+            startingEquipment: {
+                ...prev.startingEquipment,
+                default: prev.startingEquipment.default.filter((_, i) => i !== index)
+            }
+        }));
+    };
+
+    const addEquipmentOption = () => {
+        if (currentOptionSet.option1.trim() && currentOptionSet.option2.trim()) {
+            setClassData(prev => ({
+                ...prev,
+                startingEquipment: {
+                    ...prev.startingEquipment,
+                    options: [
+                        ...prev.startingEquipment.options,
+                        {
+                            option1: currentOptionSet.option1.trim(),
+                            option2: currentOptionSet.option2.trim()
+                        }
+                    ]
+                }
+            }));
+            setCurrentOptionSet({ option1: '', option2: '' });
+        }
+    };
+
+    const removeEquipmentOption = (index) => {
+        setClassData(prev => ({
+            ...prev,
+            startingEquipment: {
+                ...prev.startingEquipment,
+                options: prev.startingEquipment.options.filter((_, i) => i !== index)
+            }
+        }));
+    };
+
     // Feature form handlers
     const handleFeatureChange = (e) => {
         const { name, value } = e.target;
@@ -296,6 +372,12 @@ function ClassCreator({ onCancel }) {
                     classData.primaryAbility &&
                     classData.savingThrows.length === 2;
             case 2:
+                // For now, we're not enforcing validation on the proficiencies step
+                return true;
+            case 3:
+                // For now, we're not enforcing validation on the equipment step
+                return true;
+            case 4:
                 // For now, we're not enforcing validation on the features step
                 return true;
             default:
@@ -354,8 +436,9 @@ function ClassCreator({ onCancel }) {
     const steps = [
         { id: 1, name: 'Basic Info' },
         { id: 2, name: 'Proficiencies' },
-        { id: 3, name: 'Features' },
-        { id: 4, name: 'Preview' }
+        { id: 3, name: 'Equipment' },
+        { id: 4, name: 'Features' },
+        { id: 5, name: 'Preview' }
     ];
 
     const renderStepContent = () => {
@@ -657,6 +740,143 @@ function ClassCreator({ onCancel }) {
                     </div>
                 );
             case 3:
+                // New equipment step
+                return (
+                    <div className="form-group">
+                        <h3>Starting Equipment</h3>
+                        <p className="form-info">
+                            Define what equipment characters of this class start with. You can specify default equipment
+                            and alternative options that players can choose from.
+                        </p>
+
+                        {/* Default Equipment */}
+                        <div className="form-field">
+                            <label>Default Equipment</label>
+                            <p className="form-help">
+                                Add items that all characters of this class start with.
+                            </p>
+
+                            <div className="input-with-button">
+                                <input
+                                    type="text"
+                                    value={currentEquipmentItem}
+                                    onChange={handleEquipmentItemChange}
+                                    className="form-control"
+                                    placeholder="e.g., A longsword and a shield"
+                                />
+                                <button
+                                    className="button button-compact"
+                                    onClick={addDefaultEquipment}
+                                >
+                                    Add
+                                </button>
+                            </div>
+
+                            {classData.startingEquipment.default.length > 0 ? (
+                                <ul className="equipment-list">
+                                    {classData.startingEquipment.default.map((item, index) => (
+                                        <li key={index} className="equipment-item">
+                                            <span>{item}</span>
+                                            <button
+                                                className="button-small button-danger"
+                                                onClick={() => removeDefaultEquipment(index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="placeholder-text">No default equipment added yet.</p>
+                            )}
+                        </div>
+
+                        {/* Equipment Options */}
+                        <div className="form-field">
+                            <label>Equipment Options</label>
+                            <p className="form-help">
+                                Add equipment choices that players can select from instead of some default items.
+                                Each option set creates a "choose option1 OR option2" scenario.
+                            </p>
+
+                            <div className="option-container">
+                                <div className="option-group">
+                                    <div className="option-field">
+                                        <label htmlFor="option1">Option 1</label>
+                                        <input
+                                            type="text"
+                                            id="option1"
+                                            name="option1"
+                                            value={currentOptionSet.option1}
+                                            onChange={handleOptionChange}
+                                            className="form-control"
+                                            placeholder="e.g., (a) a martial weapon and a shield"
+                                        />
+                                    </div>
+
+                                    <div className="option-separator">OR</div>
+
+                                    <div className="option-field">
+                                        <label htmlFor="option2">Option 2</label>
+                                        <input
+                                            type="text"
+                                            id="option2"
+                                            name="option2"
+                                            value={currentOptionSet.option2}
+                                            onChange={handleOptionChange}
+                                            className="form-control"
+                                            placeholder="e.g., (b) two martial weapons"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    className="button"
+                                    onClick={addEquipmentOption}
+                                    disabled={!currentOptionSet.option1.trim() || !currentOptionSet.option2.trim()}
+                                >
+                                    Add Option Set
+                                </button>
+                            </div>
+
+                            {classData.startingEquipment.options.length > 0 ? (
+                                <div className="options-list">
+                                    {classData.startingEquipment.options.map((optionSet, index) => (
+                                        <div key={index} className="option-set">
+                                            <div className="option-set-content">
+                                                <div className="option-item">{optionSet.option1}</div>
+                                                <div className="option-or">OR</div>
+                                                <div className="option-item">{optionSet.option2}</div>
+                                            </div>
+                                            <button
+                                                className="button-small button-danger"
+                                                onClick={() => removeEquipmentOption(index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="placeholder-text">No equipment options added yet.</p>
+                            )}
+
+                            <div className="equipment-example">
+                                <h4>Example Format</h4>
+                                <p>
+                                    You start with the following items, plus anything provided by your background.
+                                </p>
+                                <ul>
+                                    <li>(a) a longsword and a shield OR (b) two shortswords</li>
+                                    <li>(a) five javelins OR (b) any simple melee weapon</li>
+                                    <li>A explorer's pack and a holy symbol</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 4:
+                // Features step
                 return (
                     <div className="features-container">
                         <h3>Class Features</h3>
@@ -791,7 +1011,8 @@ function ClassCreator({ onCancel }) {
                         </div>
                     </div>
                 );
-            case 4:
+            case 5:
+                // Preview step
                 return (
                     <div className="preview-container">
                         <div className="card class-preview">
@@ -838,6 +1059,29 @@ function ClassCreator({ onCancel }) {
                                     <p>Choose {classData.numSkillChoices} from {formatSkillProficiencies(classData.skillProficiencies)}</p>
                                 </div>
                             </div>
+
+                            {/* Equipment Section */}
+                            {(classData.startingEquipment.default.length > 0 ||
+                                classData.startingEquipment.options.length > 0) && (
+                                    <div className="class-equipment">
+                                        <h4>Equipment</h4>
+                                        <p>
+                                            You start with the following items, plus anything provided by your background:
+                                        </p>
+
+                                        <ul className="equipment-preview-list">
+                                            {classData.startingEquipment.options.map((optionSet, index) => (
+                                                <li key={`option-${index}`}>
+                                                    (a) {optionSet.option1} <strong>OR</strong> (b) {optionSet.option2}
+                                                </li>
+                                            ))}
+
+                                            {classData.startingEquipment.default.map((item, index) => (
+                                                <li key={`default-${index}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
 
                             {classData.features.length > 0 && (
                                 <div className="class-features">
