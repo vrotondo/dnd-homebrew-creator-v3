@@ -196,11 +196,14 @@ function ClassCreator({ itemId, onSave, onCancel }) {
 
     const addDefaultEquipment = () => {
         if (currentEquipmentItem.trim()) {
+            const currentDefault = Array.isArray(classData.startingEquipment?.default) ?
+                classData.startingEquipment.default : [];
+
             setClassData(prev => ({
                 ...prev,
                 startingEquipment: {
-                    ...prev.startingEquipment,
-                    default: [...prev.startingEquipment.default, currentEquipmentItem.trim()]
+                    ...prev.startingEquipment || {},
+                    default: [...currentDefault, currentEquipmentItem.trim()]
                 }
             }));
             setCurrentEquipmentItem('');
@@ -1074,8 +1077,8 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                             </div>
 
                             {/* Equipment Section */}
-                            {(classData.startingEquipment.default.length > 0 ||
-                                classData.startingEquipment.options.length > 0) && (
+                            {(classData.startingEquipment?.default?.length > 0 ||
+                                classData.startingEquipment?.options?.length > 0) && (
                                     <div className="class-equipment">
                                         <h4>Equipment</h4>
                                         <p>
@@ -1083,13 +1086,13 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                         </p>
 
                                         <ul className="equipment-preview-list">
-                                            {classData.startingEquipment.options.map((optionSet, index) => (
+                                            {classData.startingEquipment?.options?.map((optionSet, index) => (
                                                 <li key={`option-${index}`}>
                                                     (a) {optionSet.option1} <strong>OR</strong> (b) {optionSet.option2}
                                                 </li>
                                             ))}
 
-                                            {classData.startingEquipment.default.map((item, index) => (
+                                            {classData.startingEquipment?.default?.map((item, index) => (
                                                 <li key={`default-${index}`}>{item}</li>
                                             ))}
                                         </ul>

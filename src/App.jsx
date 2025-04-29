@@ -6,37 +6,40 @@ import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <Router>
-      <div className="app-container">
-        <header className="app-header">
-          <h1>D&D Homebrew Creator</h1>
-          <nav>
-            <ul className="nav-links">
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/character-creator">Character Creator</Link></li>
-              <li><Link to="/about">About</Link></li>
-            </ul>
-          </nav>
-        </header>
+    <ErrorBoundary>
+      <Router>
+        <div className="app-container">
+          <header className="app-header">
+            <h1>D&D Homebrew Creator</h1>
+            <nav>
+              <ul className="nav-links">
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/character-creator">Character Creator</Link></li>
+                <li><Link to="/about">About</Link></li>
+              </ul>
+            </nav>
+          </header>
 
-        <main className="app-main">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/character-creator" element={<CharacterCreatorPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
+          <main className="app-main">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/character-creator" element={<CharacterCreatorPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
 
-        <footer className="app-footer">
-          <p>&copy; {new Date().getFullYear()} D&D Homebrew Creator</p>
-          <p>Not affiliated with Wizards of the Coast. Compatible with 5th Edition SRD.</p>
-        </footer>
-      </div>
-    </Router>
+          <footer className="app-footer">
+            <p>&copy; {new Date().getFullYear()} D&D Homebrew Creator</p>
+            <p>Not affiliated with Wizards of the Coast. Compatible with 5th Edition SRD.</p>
+          </footer>
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
