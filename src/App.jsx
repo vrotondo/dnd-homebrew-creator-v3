@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import CharacterCreatorPage from './pages/CharacterCreatorPage';
+import ClassCreator from './components/creators/character/ClassCreator';
+import ClassManager from './pages/ClassManager';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
@@ -19,6 +21,7 @@ function App() {
               <ul className="nav-links">
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/character-creator">Character Creator</Link></li>
+                <li><Link to="/class-manager">Manage Classes</Link></li>
                 <li><Link to="/about">About</Link></li>
               </ul>
             </nav>
@@ -28,6 +31,9 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/character-creator" element={<CharacterCreatorPage />} />
+              <Route path="/character-creator/class/new" element={<ClassCreator />} />
+              <Route path="/character-creator/class/:id" element={<ClassCreator />} />
+              <Route path="/class-manager" element={<ClassManager />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

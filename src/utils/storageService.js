@@ -326,6 +326,22 @@ const generateId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 };
 
+const duplicateClass = (classData) => {
+    // Create a copy with a new ID
+    const duplicate = {
+        ...classData,
+        id: null, // Will be generated on save
+        name: classData.name.includes('(Copy)')
+            ? classData.name
+            : `${classData.name} (Copy)`,
+        createdAt: null, // Will be set on save
+        updatedAt: null // Will be set on save
+    };
+
+    // Save the duplicate
+    return saveClass(duplicate);
+};
+
 // Convenience methods for specific content types
 // Classes
 const getClasses = (options) => getAllItems(STORAGE_KEYS.CLASSES, options);
@@ -389,5 +405,7 @@ export {
     getBackgrounds,
     getBackgroundById,
     saveBackground,
-    deleteBackground
+    deleteBackground,
+
+    duplicateClass
 };
