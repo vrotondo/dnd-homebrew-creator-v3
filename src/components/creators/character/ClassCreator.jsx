@@ -1028,9 +1028,20 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                     </div>
                 );
             case 5:
-                // Preview step
+            // Preview step
+            case 5: // Preview step
                 return (
                     <div className="preview-container">
+                        <div className="preview-header">
+                            <h3>Preview</h3>
+                            <button
+                                className="button"
+                                onClick={() => setShowExportModal(true)}
+                            >
+                                Export
+                            </button>
+                        </div>
+
                         <div className="card class-preview">
                             <h3 className="class-title">{classData.name || "Unnamed Class"}</h3>
                             <p className="class-description">{classData.description}</p>
@@ -1126,7 +1137,13 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                 </div>
                             )}
                         </div>
-                    </div>
+                        {showExportModal && (
+                            <ExportModal
+                                classData={classData}
+                                onClose={() => setShowExportModal(false)}
+                            />
+                        )}
+                    </div >
                 );
             default:
                 return <div>Unknown step</div>;
