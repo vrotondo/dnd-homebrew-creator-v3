@@ -1,6 +1,7 @@
 // src/components/creators/character/ClassCreator.jsx
 import { useState, useEffect } from 'react';
 import { saveClass, getClassById } from "../../../utils/storageService";
+import ExportModal from '../export/ExportModal';
 
 function ClassCreator({ itemId, onSave, onCancel }) {
     const [currentStep, setCurrentStep] = useState(1);
@@ -21,6 +22,8 @@ function ClassCreator({ itemId, onSave, onCancel }) {
         },
         features: []
     });
+
+    const [showExportModal, setShowExportModal] = useState(false);
 
     // New state for equipment option editing
     const [currentEquipmentItem, setCurrentEquipmentItem] = useState('');
