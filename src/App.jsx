@@ -6,8 +6,11 @@ import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import ClassCreator from './components/creators/character/ClassCreator';
 import SubclassCreator from './components/creators/character/SubclassCreator';
 import RaceCreator from './components/creators/character/RaceCreator';
+// Add these imports:
 import RacesList from './components/creators/character/RacesList';
 import RacePreview from './components/creators/character/RacePreview';
+import BackgroundCreator from './components/creators/character/BackgroundCreator';
+import BackgroundsList from './components/creators/character/BackgroundsList';
 import ClassManager from './pages/ClassManager';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -27,6 +30,7 @@ function App() {
                 <li><Link to="/character-creator">Character Creator</Link></li>
                 <li><Link to="/class-manager">Manage Classes</Link></li>
                 <li><Link to="/character/races">Manage Races</Link></li>
+                <li><Link to="/character/backgrounds">Manage Backgrounds</Link></li>
                 <li><Link to="/about">About</Link></li>
               </ul>
             </nav>
@@ -40,10 +44,19 @@ function App() {
               <Route path="/character-creator/class/:id" element={<ClassCreator />} />
               <Route path="/character-creator/subclass/new" element={<SubclassCreator />} />
               <Route path="/character-creator/subclass/:id" element={<SubclassCreator />} />
+
+              {/* Race Routes */}
               <Route path="/character/races" element={<RacesList />} />
               <Route path="/character/races/create" element={<RaceCreator />} />
               <Route path="/character/races/edit/:id" element={<RaceCreator />} />
               <Route path="/character/races/view/:id" element={<RacePreview />} />
+
+              {/* Background Routes */}
+              <Route path="/character/backgrounds" element={<BackgroundsList />} />
+              <Route path="/character/backgrounds/create" element={<BackgroundCreator />} />
+              <Route path="/character/backgrounds/edit/:id" element={<BackgroundCreator />} />
+              <Route path="/character/backgrounds/view/:id" element={<BackgroundCreator />} />
+
               <Route path="/class-manager" element={<ClassManager />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFoundPage />} />

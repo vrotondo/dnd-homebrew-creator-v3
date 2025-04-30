@@ -222,6 +222,27 @@ export {
 };
 
 /**
+ * Duplicate a background
+ * @param {Object} background - Background data to duplicate
+ * @returns {string|null} - ID of the new background or null if failed
+ */
+const duplicateBackground = (background) => {
+    // Create a copy with a new ID
+    const duplicate = {
+        ...background,
+        id: null, // Will be generated on save
+        name: background.name.includes('(Copy)')
+            ? background.name
+            : `${background.name} (Copy)`,
+        createdAt: null, // Will be set on save
+        updatedAt: null // Will be set on save
+    };
+
+    // Save the duplicate
+    return saveBackground(duplicate);
+};
+
+/**
  * Export all homebrew content
  * @returns {Object} All homebrew content
  */
@@ -479,6 +500,7 @@ export {
     getBackgroundById,
     saveBackground,
     deleteBackground,
+    duplicateBackground,
 
     duplicateClass
 };
