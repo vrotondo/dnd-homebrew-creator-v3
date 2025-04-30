@@ -1200,7 +1200,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                         </div>
                     </div>
                 );
-            case 5: // Preview step
+            case 6: // Preview step
                 return (
                     <div className="preview-container">
                         <div className="preview-header">
@@ -1258,7 +1258,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                 </div>
                             </div>
 
-                            {/* Spellcasting section in preview */}
+                            {/* Spellcasting section */}
                             {classData.spellcasting?.enabled && (
                                 <div className="class-spellcasting">
                                     <h4>Spellcasting</h4>
@@ -1272,7 +1272,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                     <p>{formatSpellcastingType(classData.spellcasting.type)}</p>
 
                                     <h5>Spell List</h5>
-                                    {classData.spellcasting.spellList.length > 0 ? (
+                                    {classData.spellcasting.spellList?.length > 0 ? (
                                         <div className="spell-list-preview">
                                             {renderSpellListPreview(classData.spellcasting.spellList)}
                                         </div>
@@ -1305,6 +1305,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                     </div>
                                 )}
 
+                            {/* Features section */}
                             {classData.features.length > 0 && (
                                 <div className="class-features">
                                     <h4>Class Features</h4>
@@ -1338,7 +1339,7 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                 onClose={() => setShowExportModal(false)}
                             />
                         )}
-                    </div >
+                    </div>
                 );
             default:
                 return <div>Unknown step</div>;
