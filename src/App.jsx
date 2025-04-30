@@ -6,6 +6,8 @@ import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import ClassCreator from './components/creators/character/ClassCreator';
 import SubclassCreator from './components/creators/character/SubclassCreator';
 import RaceCreator from './components/creators/character/RaceCreator';
+import RacesList from './components/creators/character/RacesList';
+import RacePreview from './components/creators/character/RacePreview';
 import ClassManager from './pages/ClassManager';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -37,8 +39,10 @@ function App() {
               <Route path="/character-creator/class/:id" element={<ClassCreator />} />
               <Route path="/character-creator/subclass/new" element={<SubclassCreator />} />
               <Route path="/character-creator/subclass/:id" element={<SubclassCreator />} />
-              <Route path="/character-creator/race/new" element={<RaceCreator />} />
-              <Route path="/character-creator/race/:id" element={<RaceCreator />} />
+              <Route path="/character/races" element={<RacesList />} />
+              <Route path="/character/races/create" element={<RaceCreator />} />
+              <Route path="/character/races/edit/:id" element={<RaceCreator />} />
+              <Route path="/character/races/view/:id" element={<RacePreview />} />
               <Route path="/class-manager" element={<ClassManager />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFoundPage />} />

@@ -164,7 +164,35 @@ const getAllItems = (storageKey, options = {}) => {
     }
 };
 
-// Add to utils/storageService.js
+const migrateRacesData = () => {
+    try {
+        // Check if there's data in the old storage key
+        const oldRacesData = localStorage.getItem('races');
+
+        if (oldRacesData) {
+            const oldRaces = JSON.parse(oldRacesData);
+            if (oldRaces && oldRaces.length > 0) {
+                // Get current races in the new format
+                const currentRaces = getRaces();
+
+                // Save old races to new format
+                oldRaces.forEach(race => {
+                    // Only migrate if doesn't already exist
+                    if (!currentRaces.some(r => r.id === race.id)) {
+                        saveRace(race);
+                    }
+                });
+
+                // Clear old storage
+                localStorage.removeItem('races');
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error('Error migrating races data:', error);
+        return false;
+    }
+};
 
 /**
  * Duplicate a subclass
