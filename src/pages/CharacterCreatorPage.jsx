@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ClassCreator from '../components/creators/character/ClassCreator';
 import { getClasses, deleteClass } from '../utils/storageService';
+import SubclassCreator from '../components/creators/character/SubclassCreator';
 
 function CharacterCreatorPage() {
     const [creatorType, setCreatorType] = useState(null);

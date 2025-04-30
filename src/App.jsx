@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import ClassCreator from './components/creators/character/ClassCreator';
+import SubclassCreator from './components/creators/character/SubclassCreator';
 import ClassManager from './pages/ClassManager';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';

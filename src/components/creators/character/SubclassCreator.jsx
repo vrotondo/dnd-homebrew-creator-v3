@@ -4,6 +4,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getClasses } from '../../../utils/storageService';
 import { saveSubclass, getSubclassById } from '../../../utils/storageService';
 import ExportModal from '../../export/ExportModal';
+import SubclassFeatures from './SubclassFeatures';
+import SubclassSpells from './SubclassSpells';
+import SubclassPreview from './SubclassPreview';
 
 function SubclassCreator({ onSave, onCancel }) {
     const navigate = useNavigate();
