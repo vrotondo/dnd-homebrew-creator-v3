@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import ClassCreator from '../components/creators/character/ClassCreator';
 import { getClasses, deleteClass } from '../utils/storageService';
 import SubclassCreator from '../components/creators/character/SubclassCreator';
+import RaceCreator from '../components/creators/character/RaceCreator';
 
 function CharacterCreatorPage() {
     const [creatorType, setCreatorType] = useState(null);
@@ -68,8 +69,8 @@ function CharacterCreatorPage() {
                     <button onClick={() => setCreatorType('subclass')} className="button">
                         Subclass
                     </button>
-                    <button className="button button-secondary" disabled>
-                        Race (Coming Soon)
+                    <button onClick={() => setCreatorType('race')} className="button">
+                        Race
                     </button>
                     <button className="button button-secondary" disabled>
                         Background (Coming Soon)
@@ -173,6 +174,11 @@ function CharacterCreatorPage() {
                 />
             ) : creatorType === 'subclass' ? (
                 <SubclassCreator
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            ) : creatorType === 'race' ? (
+                <RaceCreator
                     onSave={handleSave}
                     onCancel={handleCancel}
                 />

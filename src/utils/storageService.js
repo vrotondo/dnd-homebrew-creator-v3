@@ -389,6 +389,21 @@ const getRaces = (options) => getAllItems(STORAGE_KEYS.RACES, options);
 const getRaceById = (id) => getItemById(STORAGE_KEYS.RACES, id);
 const saveRace = (race) => saveItem(STORAGE_KEYS.RACES, race);
 const deleteRace = (id) => deleteItem(STORAGE_KEYS.RACES, id);
+const duplicateRace = (race) => {
+    // Create a copy with a new ID
+    const duplicate = {
+        ...race,
+        id: null, // Will be generated on save
+        name: race.name.includes('(Copy)')
+            ? race.name
+            : `${race.name} (Copy)`,
+        createdAt: null, // Will be set on save
+        updatedAt: null // Will be set on save
+    };
+
+    // Save the duplicate
+    return saveRace(duplicate);
+};
 
 // Backgrounds
 const getBackgrounds = (options) => getAllItems(STORAGE_KEYS.BACKGROUNDS, options);
@@ -429,6 +444,7 @@ export {
     getRaceById,
     saveRace,
     deleteRace,
+    duplicateRace,
 
     // Background methods
     getBackgrounds,
