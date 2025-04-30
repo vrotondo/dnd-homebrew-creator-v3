@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { saveClass, getClassById } from "../../../utils/storageService";
 import ExportModal from '../../export/ExportModal';
+import SpellSelector from './SpellSelector';
+import { getSpellById, formatSpellLevel } from '../../../utils/spellData';
 
 function ClassCreator({ itemId, onSave, onCancel }) {
     const [currentStep, setCurrentStep] = useState(1);
@@ -19,6 +21,13 @@ function ClassCreator({ itemId, onSave, onCancel }) {
         startingEquipment: {
             default: [],
             options: []
+        },
+        spellcasting: {
+            enabled: false,
+            ability: '',
+            type: 'full',
+            focusType: '',
+            spellList: []
         },
         features: []
     });
@@ -281,6 +290,23 @@ function ClassCreator({ itemId, onSave, onCancel }) {
         return Object.keys(newErrors).length === 0;
     };
 
+    const updateClassData = (newData) => {
+        setClassData(prev => {
+            // Handle nested updates for spellcasting
+            if (newData.spellcasting) {
+                return {
+                    ...prev,
+                    spellcasting: {
+                        ...prev.spellcasting,
+                        ...newData.spellcasting
+                    }
+                };
+            }
+            // Regular update for non-nested properties
+            return { ...prev, ...newData };
+        });
+    };
+
     const handleAddFeature = () => {
         if (validateFeature()) {
             if (editingFeatureIndex !== null) {
@@ -368,7 +394,25 @@ function ClassCreator({ itemId, onSave, onCancel }) {
         if (itemId) {
             const existingClass = getClassById(itemId);
             if (existingClass) {
-                setClassData(existingClass);
+                // Ensure spellcasting is properly initialized with defaults
+                const updatedClass = {
+                    ...existingClass,
+                    // Initialize spellcasting if it doesn't exist
+                    spellcasting: existingClass.spellcasting || {
+                        enabled: false,
+                        ability: '',
+                        type: 'full',
+                        focusType: '',
+                        spellList: []
+                    },
+                    // Initialize startingEquipment if it doesn't exist
+                    startingEquipment: existingClass.startingEquipment || {
+                        default: [],
+                        options: []
+                    }
+                };
+
+                setClassData(updatedClass);
             }
         }
     }, [itemId]);
@@ -454,8 +498,9 @@ function ClassCreator({ itemId, onSave, onCancel }) {
         { id: 1, name: 'Basic Info' },
         { id: 2, name: 'Proficiencies' },
         { id: 3, name: 'Equipment' },
-        { id: 4, name: 'Features' },
-        { id: 5, name: 'Preview' }
+        { id: 4, name: 'Spellcasting' },
+        { id: 5, name: 'Features' },
+        { id: 6, name: 'Preview' }
     ];
 
     const renderStepContent = () => {
@@ -894,7 +939,132 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                         </div>
                     </div>
                 );
-            case 4:
+            case 4: // Spellcasting step
+                return (
+                    <div className="form-group">
+                        <h3>Spellcasting</h3>
+
+                        <div className="form-field">
+                            <div className="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    id="spellcasting-enabled"
+                                    checked={classData.spellcasting?.enabled || false}
+                                    onChange={(e) => {
+                                        console.log("Checkbox clicked, new value:", e.target.checked);
+                                        console.log("Current spellcasting state:", classData.spellcasting);
+
+                                        // Then update state
+                                        setClassData(prev => {
+                                            const newState = {
+                                                ...prev,
+                                                spellcasting: {
+                                                    ...prev.spellcasting,
+                                                    enabled: e.target.checked
+                                                }
+                                            };
+                                            console.log("New state will be:", newState);
+                                            return newState;
+                                        });
+                                    }}
+                                />
+                                <label htmlFor="spellcasting-enabled">This class can cast spells</label>
+                            </div>
+                        </div>
+
+                        {classData.spellcasting?.enabled && (
+                            <>
+                                <div className="spellcasting-options">
+                                    <div className="form-field">
+                                        <label htmlFor="spellcasting-ability">Spellcasting Ability</label>
+                                        <select
+                                            id="spellcasting-ability"
+                                            value={classData.spellcasting.ability}
+                                            onChange={(e) => {
+                                                updateClassData({
+                                                    spellcasting: {
+                                                        ...classData.spellcasting,
+                                                        ability: e.target.value
+                                                    }
+                                                });
+                                            }}
+                                            className="form-control"
+                                        >
+                                            <option value="">Select ability...</option>
+                                            <option value="INT">Intelligence</option>
+                                            <option value="WIS">Wisdom</option>
+                                            <option value="CHA">Charisma</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-field">
+                                        <label htmlFor="spellcasting-type">Spellcasting Progression</label>
+                                        <select
+                                            id="spellcasting-type"
+                                            value={classData.spellcasting.type}
+                                            onChange={(e) => {
+                                                updateClassData({
+                                                    spellcasting: {
+                                                        ...classData.spellcasting,
+                                                        type: e.target.value
+                                                    }
+                                                });
+                                            }}
+                                            className="form-control"
+                                        >
+                                            <option value="full">Full Caster (like Wizard, Cleric)</option>
+                                            <option value="half">Half Caster (like Paladin, Ranger)</option>
+                                            <option value="third">Third Caster (like Eldritch Knight)</option>
+                                            <option value="pact">Pact Magic (like Warlock)</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-field">
+                                        <label htmlFor="spellcasting-focus">Spellcasting Focus</label>
+                                        <select
+                                            id="spellcasting-focus"
+                                            value={classData.spellcasting.focusType}
+                                            onChange={(e) => {
+                                                updateClassData({
+                                                    spellcasting: {
+                                                        ...classData.spellcasting,
+                                                        focusType: e.target.value
+                                                    }
+                                                });
+                                            }}
+                                            className="form-control"
+                                        >
+                                            <option value="">No special focus</option>
+                                            <option value="arcane">Arcane Focus</option>
+                                            <option value="druidic">Druidic Focus</option>
+                                            <option value="holy">Holy Symbol</option>
+                                            <option value="special">Special Focus</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="form-field mt-6">
+                                    <h4 className="mb-2">Spell List</h4>
+                                    <p className="form-help">Select which spells are available to this class.</p>
+
+                                    <SpellSelector
+                                        selectedSpells={classData.spellcasting.spellList}
+                                        onChange={(spellList) => {
+                                            updateClassData({
+                                                spellcasting: {
+                                                    ...classData.spellcasting,
+                                                    spellList
+                                                }
+                                            });
+                                        }}
+                                        spellcastingType={classData.spellcasting.type}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                );
+            case 5:
                 // Features step
                 return (
                     <div className="features-container">
@@ -1030,8 +1200,6 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                         </div>
                     </div>
                 );
-            case 5:
-            // Preview step
             case 5: // Preview step
                 return (
                     <div className="preview-container">
@@ -1089,6 +1257,30 @@ function ClassCreator({ itemId, onSave, onCancel }) {
                                     <p>Choose {classData.numSkillChoices} from {formatSkillProficiencies(classData.skillProficiencies)}</p>
                                 </div>
                             </div>
+
+                            {/* Spellcasting section in preview */}
+                            {classData.spellcasting?.enabled && (
+                                <div className="class-spellcasting">
+                                    <h4>Spellcasting</h4>
+
+                                    <p>
+                                        As a {classData.name}, you can cast spells using your {getAbilityName(classData.spellcasting.ability)} as your spellcasting ability.
+                                        {classData.spellcasting.focusType && ` You can use a ${formatFocusType(classData.spellcasting.focusType)} as a spellcasting focus.`}
+                                    </p>
+
+                                    <h5>Spell Progression</h5>
+                                    <p>{formatSpellcastingType(classData.spellcasting.type)}</p>
+
+                                    <h5>Spell List</h5>
+                                    {classData.spellcasting.spellList.length > 0 ? (
+                                        <div className="spell-list-preview">
+                                            {renderSpellListPreview(classData.spellcasting.spellList)}
+                                        </div>
+                                    ) : (
+                                        <p className="empty-text">No spells selected.</p>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Equipment Section */}
                             {(classData.startingEquipment?.default?.length > 0 ||
@@ -1223,6 +1415,67 @@ function ClassCreator({ itemId, onSave, onCancel }) {
 
         return formattedProficiencies.join(', ');
     }
+
+    // Format focus type
+    const formatFocusType = (focusType) => {
+        switch (focusType) {
+            case 'arcane': return 'arcane focus (such as a wand, staff, or crystal)';
+            case 'druidic': return 'druidic focus (such as a sprig of mistletoe, totem, wooden staff, or yew wand)';
+            case 'holy': return 'holy symbol';
+            case 'special': return 'special focus for this class';
+            default: return 'spellcasting focus';
+        }
+    };
+
+    // Format spellcasting type
+    const formatSpellcastingType = (type) => {
+        switch (type) {
+            case 'full': return 'You follow the spellcasting progression of a full spellcaster, such as a Wizard or Cleric, gaining access to higher level spells as you gain levels.';
+            case 'half': return 'You follow the spellcasting progression of a half caster, such as a Paladin or Ranger, gaining spell slots at a slower rate and maxing out at 5th-level spells.';
+            case 'third': return 'You follow the spellcasting progression of a third caster, such as an Eldritch Knight or Arcane Trickster, gaining spell slots at a very slow rate and maxing out at 4th-level spells.';
+            case 'pact': return 'You follow the Pact Magic spellcasting progression, similar to a Warlock.';
+            default: return 'Your spellcasting follows a custom progression.';
+        }
+    };
+
+    // Render spell list preview
+    const renderSpellListPreview = (spellList) => {
+        if (!spellList || spellList.length === 0) {
+            return null;
+        }
+
+        const spells = spellList
+            .map(id => getSpellById(id))
+            .filter(Boolean);
+
+        // Group by level
+        const spellsByLevel = spells.reduce((acc, spell) => {
+            if (!acc[spell.level]) {
+                acc[spell.level] = [];
+            }
+            acc[spell.level].push(spell);
+            return acc;
+        }, {});
+
+        return (
+            <div className="spell-list-by-level">
+                {Object.keys(spellsByLevel)
+                    .sort((a, b) => parseInt(a) - parseInt(b))
+                    .map(level => (
+                        <div key={level} className="spell-level">
+                            <h6>{formatSpellLevel(parseInt(level))}</h6>
+                            <ul className="spell-names">
+                                {spellsByLevel[level]
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map(spell => (
+                                        <li key={spell.id}>{spell.name}</li>
+                                    ))}
+                            </ul>
+                        </div>
+                    ))}
+            </div>
+        );
+    };
 
     return (
         <div className="form-container">
