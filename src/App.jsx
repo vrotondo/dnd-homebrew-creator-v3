@@ -33,6 +33,8 @@ function App() {
               <Route path="/character-creator" element={<CharacterCreatorPage />} />
               <Route path="/character-creator/class/new" element={<ClassCreator />} />
               <Route path="/character-creator/class/:id" element={<ClassCreator />} />
+              <Route path="/character-creator/subclass/new" element={<SubclassCreator />} />
+              <Route path="/character-creator/subclass/:id" element={<SubclassCreator />} />
               <Route path="/class-manager" element={<ClassManager />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFoundPage />} />

@@ -1160,3 +1160,164 @@ button:disabled {
 .mb-2 {
   margin-bottom: 0.5rem;
 }
+
+/* Subclass Creator */
+.selected-class-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-left: 4px solid #4a3f85;
+}
+
+.subclass-levels {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.info-message {
+  background-color: #e6f7ff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-left: 4px solid #1890ff;
+  color: #0050b3;
+}
+
+/* Subclass Spells */
+.spell-selection-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.current-spell-selections {
+  margin-bottom: 2rem;
+}
+
+.spell-level-selection {
+  margin-bottom: 1rem;
+}
+
+.spell-level-selection h5 {
+  margin-bottom: 0.5rem;
+  color: #4a3f85;
+  font-size: 1rem;
+}
+
+.selected-spells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selected-spell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f0efff;
+  border: 1px solid #d8d6ff;
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.empty-selection {
+  font-style: italic;
+  color: #888;
+  padding: 0.5rem;
+}
+
+.available-spells {
+  border-top: 1px solid #eee;
+  padding-top: 1.5rem;
+}
+
+.spell-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Subclass Preview */
+.subclass-preview {
+  padding: 1rem;
+}
+
+.subclass-title {
+  font-size: 2rem;
+  color: #4a3f85;
+  margin-bottom: 0.25rem;
+}
+
+.subclass-type {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.subclass-description {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.subclass-flavor {
+  background-color: #f8f9fa;
+  border-left: 3px solid #4a3f85;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  font-style: italic;
+  color: #555;
+}
+
+.subclass-spells-preview {
+  margin-bottom: 2rem;
+}
+
+.spells-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.spells-table th,
+.spells-table td {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.spells-table th {
+  background-color: #f0efff;
+  color: #4a3f85;
+}
+
+.spell-level-note {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.subclass-features-preview {
+  margin-top: 2rem;
+}
+
+.feature-level {
+  margin-bottom: 1.5rem;
+}
+
+.feature-level h5 {
+  color: #4a3f85;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.feature h6 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature {
+  margin-bottom: 1.5rem;
+}

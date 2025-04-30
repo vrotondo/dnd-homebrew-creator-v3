@@ -64,8 +64,8 @@ function CharacterCreatorPage() {
                     <button onClick={() => setCreatorType('class')} className="button">
                         Character Class
                     </button>
-                    <button className="button button-secondary" disabled>
-                        Subclass (Coming Soon)
+                    <button onClick={() => setCreatorType('subclass')} className="button">
+                        Subclass
                     </button>
                     <button className="button button-secondary" disabled>
                         Race (Coming Soon)
@@ -167,6 +167,11 @@ function CharacterCreatorPage() {
             ) : creatorType === 'class' ? (
                 <ClassCreator
                     itemId={editingItemId}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            ) : creatorType === 'subclass' ? (
+                <SubclassCreator
                     onSave={handleSave}
                     onCancel={handleCancel}
                 />

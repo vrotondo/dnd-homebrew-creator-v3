@@ -164,6 +164,35 @@ const getAllItems = (storageKey, options = {}) => {
     }
 };
 
+// Add to utils/storageService.js
+
+/**
+ * Duplicate a subclass
+ * @param {Object} subclassData - Subclass data to duplicate
+ * @returns {string|null} - ID of the new subclass or null if failed
+ */
+const duplicateSubclass = (subclassData) => {
+    // Create a copy with a new ID
+    const duplicate = {
+        ...subclassData,
+        id: null, // Will be generated on save
+        name: subclassData.name.includes('(Copy)')
+            ? subclassData.name
+            : `${subclassData.name} (Copy)`,
+        createdAt: null, // Will be set on save
+        updatedAt: null // Will be set on save
+    };
+
+    // Save the duplicate
+    return saveSubclass(duplicate);
+};
+
+// Update the export section
+export {
+    // ...existing exports
+    duplicateSubclass
+};
+
 /**
  * Export all homebrew content
  * @returns {Object} All homebrew content
