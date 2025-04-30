@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveRace, getRaceById } from '../../../utils/storageService';
 import ExportModal from '../../export/ExportModal';
+import RacialTraits from './RacialTraits';
+import Subraces from './Subraces';
+import RacePreview from './RacePreview';
 
 function RaceCreator({ onSave, onCancel }) {
     const navigate = useNavigate();
