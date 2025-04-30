@@ -5,8 +5,8 @@ import ClassCreator from '../components/creators/character/ClassCreator';
 import { getClasses, deleteClass } from '../utils/storageService';
 import SubclassCreator from '../components/creators/character/SubclassCreator';
 import RaceCreator from '../components/creators/character/RaceCreator';
+import BackgroundCreator from '../components/creators/character/BackgroundCreator';
 import { migrateRacesData } from '../utils/racesMigration';
-
 
 function CharacterCreatorPage() {
     const [creatorType, setCreatorType] = useState(null);
@@ -14,9 +14,10 @@ function CharacterCreatorPage() {
     const [savedClasses, setSavedClasses] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Load saved classes
+    // Load saved classes and migrate races data if needed
     useEffect(() => {
         loadSavedClasses();
+        migrateRacesData();
     }, []);
 
     const loadSavedClasses = () => {
@@ -74,9 +75,25 @@ function CharacterCreatorPage() {
                     <button onClick={() => setCreatorType('race')} className="button">
                         Race
                     </button>
-                    <button className="button button-secondary" disabled>
-                        Background (Coming Soon)
+                    {/* Updated to enable Background button */}
+                    <button onClick={() => setCreatorType('background')} className="button">
+                        Background
                     </button>
+                </div>
+            </div>
+
+            <div className="creator-navigation">
+                <h3>Manage Your Content</h3>
+                <div className="button-group">
+                    <Link to="/class-manager" className="button button-secondary">
+                        Manage Classes
+                    </Link>
+                    <Link to="/character/races" className="button button-secondary">
+                        Manage Races
+                    </Link>
+                    <Link to="/character/backgrounds" className="button button-secondary">
+                        Manage Backgrounds
+                    </Link>
                 </div>
             </div>
 
@@ -181,6 +198,11 @@ function CharacterCreatorPage() {
                 />
             ) : creatorType === 'race' ? (
                 <RaceCreator
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            ) : creatorType === 'background' ? (
+                <BackgroundCreator
                     onSave={handleSave}
                     onCancel={handleCancel}
                 />
