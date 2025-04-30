@@ -5,6 +5,8 @@ import ClassCreator from '../components/creators/character/ClassCreator';
 import { getClasses, deleteClass } from '../utils/storageService';
 import SubclassCreator from '../components/creators/character/SubclassCreator';
 import RaceCreator from '../components/creators/character/RaceCreator';
+import { migrateRacesData } from '../utils/racesMigration';
+
 
 function CharacterCreatorPage() {
     const [creatorType, setCreatorType] = useState(null);

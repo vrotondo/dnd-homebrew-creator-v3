@@ -1,5 +1,38 @@
 // src/components/creators/character/RacePreview.jsx
-function RacePreview({ raceData }) {
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getRaceById } from '../../../utils/storageService';
+
+function RacePreview({ raceData: propRaceData }) {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [raceData, setRaceData] = useState(propRaceData || null);
+    const [loading, setLoading] = useState(!propRaceData);
+
+    useEffect(() => {
+        // If no props were provided, try to load by ID
+        if (!propRaceData && id) {
+            setLoading(true);
+            const race = getRaceById(id);
+            if (race) {
+                setRaceData(race);
+            } else {
+                // Race not found
+                alert('Race not found');
+                navigate('/character/races');
+            }
+            setLoading(false);
+        }
+    }, [id, propRaceData, navigate]);
+
+    if (loading) {
+        return <div className="loading">Loading race...</div>;
+    }
+
+    if (!raceData) {
+        return <div className="error">Race not found</div>;
+    }
+
     // Helper function for ability names
     function getAbilityName(ability) {
         const abilities = {
@@ -13,114 +46,94 @@ function RacePreview({ raceData }) {
         return abilities[ability] || ability;
     }
 
-    // Format ability score increases
-    const formatAbilityScoreIncreases = (increases) => {
-        if (!increases) return 'None';
-
-        const increaseText = Object.entries(increases)
-            .filter(([_, value]) => value > 0)
-            .map(([ability, value]) => `${getAbilityName(ability)} +${value}`)
-            .join(', ');
-
-        return increaseText || 'None';
-    };
-
     return (
-        <div className="race-preview-content">
-            <h3 className="race-title">{raceData.name}</h3>
-
-            <div className="race-description">
-                {raceData.description}
+        <div className="race-preview-container">
+            <div className="preview-header">
+                <h2>{raceData.name}</h2>
+                <button
+                    className="button button-secondary"
+                    onClick={() => navigate('/character/races')}
+                >
+                    Back to Races
+                </button>
             </div>
 
-            <div className="race-traits-summary">
-                <div className="trait-summary">
-                    <h4>Ability Score Increase</h4>
-                    <p>{formatAbilityScoreIncreases(raceData.abilityScoreIncreases)}</p>
+            <div className="race-details">
+                <div className="race-description">
+                    <h3>Description</h3>
+                    <p>{raceData.description}</p>
                 </div>
 
-                <div className="trait-summary">
-                    <h4>Age</h4>
-                    <p>
-                        {raceData.age.maturity && <span>{raceData.age.maturity}. </span>}
-                        {raceData.age.lifespan && <span>{raceData.age.lifespan}</span>}
-                    </p>
-                </div>
-
-                <div className="trait-summary">
-                    <h4>Alignment</h4>
-                    <p>{raceData.alignment || 'No particular alignment tendency.'}</p>
-                </div>
-
-                <div className="trait-summary">
-                    <h4>Size</h4>
-                    <p>{raceData.size}</p>
-                </div>
-
-                <div className="trait-summary">
-                    <h4>Speed</h4>
-                    <p>Your base walking speed is {raceData.speed} feet.</p>
-                </div>
-
-                <div className="trait-summary">
-                    <h4>Languages</h4>
-                    <p>You can speak, read, and write {raceData.languages.join(', ')}.
-                        {raceData.extraLanguages && <span> {raceData.extraLanguages}</span>}
-                    </p>
-                </div>
-
-                <div className="trait-summary">
-                    <h4>Vision</h4>
-                    <p>
-                        {raceData.vision.darkvision
-                            ? `You have darkvision with a range of ${raceData.vision.range} feet.`
-                            : 'You have normal vision.'}
-                    </p>
-                </div>
-            </div>
-
-            {raceData.traits.length > 0 && (
-                <div className="race-traits">
-                    <h4>Traits</h4>
-
-                    {raceData.traits.map((trait, index) => (
-                        <div key={index} className="race-trait">
-                            <h5>{trait.name}</h5>
-                            <p>{trait.description}</p>
+                <div className="race-basics">
+                    <h3>Basic Traits</h3>
+                    <div className="trait-grid">
+                        <div className="trait">
+                            <span className="trait-label">Size:</span>
+                            <span className="trait-value">{raceData.size}</span>
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {raceData.subraces.length > 0 && (
-                <div className="race-subraces">
-                    <h4>Subraces</h4>
-
-                    <p>The following subraces are available to {raceData.name}s:</p>
-
-                    {raceData.subraces.map((subrace, index) => (
-                        <div key={index} className="subrace">
-                            <h5>{subrace.name}</h5>
-                            <p>{subrace.description}</p>
-
-                            <div className="subrace-details">
-                                <p><strong>Ability Score Increase:</strong> {formatAbilityScoreIncreases(subrace.abilityScoreIncreases)}</p>
-
-                                {subrace.traits.length > 0 && (
-                                    <div className="subrace-traits">
-                                        {subrace.traits.map((trait, traitIndex) => (
-                                            <div key={traitIndex} className="subrace-trait">
-                                                <h6>{trait.name}</h6>
-                                                <p>{trait.description}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                        <div className="trait">
+                            <span className="trait-label">Speed:</span>
+                            <span className="trait-value">{raceData.speed} ft.</span>
+                        </div>
+                        {raceData.vision && raceData.vision.darkvision && (
+                            <div className="trait">
+                                <span className="trait-label">Darkvision:</span>
+                                <span className="trait-value">{raceData.vision.range} ft.</span>
                             </div>
-                        </div>
-                    ))}
+                        )}
+                    </div>
                 </div>
-            )}
+
+                <div className="race-ability-scores">
+                    <h3>Ability Score Increases</h3>
+                    <div className="ability-grid">
+                        {Object.entries(raceData.abilityScoreIncreases).map(([ability, value]) => (
+                            value > 0 && (
+                                <div key={ability} className="ability">
+                                    <span className="ability-name">{getAbilityName(ability)}:</span>
+                                    <span className="ability-value">+{value}</span>
+                                </div>
+                            )
+                        ))}
+                    </div>
+                </div>
+
+                <div className="race-languages">
+                    <h3>Languages</h3>
+                    <p>{raceData.languages.join(', ')}</p>
+                    {raceData.extraLanguages && (
+                        <p className="extra-languages">{raceData.extraLanguages}</p>
+                    )}
+                </div>
+
+                {raceData.traits && raceData.traits.length > 0 && (
+                    <div className="race-racial-traits">
+                        <h3>Racial Traits</h3>
+                        <div className="traits-list">
+                            {raceData.traits.map((trait, index) => (
+                                <div key={index} className="trait-card">
+                                    <h4>{trait.name}</h4>
+                                    <p>{trait.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {raceData.subraces && raceData.subraces.length > 0 && (
+                    <div className="race-subraces">
+                        <h3>Subraces</h3>
+                        <div className="subraces-list">
+                            {raceData.subraces.map((subrace, index) => (
+                                <div key={index} className="subrace-card">
+                                    <h4>{subrace.name}</h4>
+                                    <p>{subrace.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

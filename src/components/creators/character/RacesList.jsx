@@ -1,20 +1,25 @@
 // src/components/creators/character/RacesList.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getRaces } from '../../../utils/storageService';
+import { getRaces, deleteRace, duplicateRace } from '../../../utils/storageService';
 
 function RacesList() {
     const [races, setRaces] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Load races when component mounts
-        const loadRaces = () => {
-            const savedRaces = getRaces(); // Use getRaces instead of getAllRaces
-            setRaces(savedRaces);
-        };
-
         loadRaces();
     }, []);
+
+    const loadRaces = () => {
+        setLoading(true);
+        // Use getRaces instead of getAllRaces
+        const savedRaces = getRaces();
+        setRaces(savedRaces);
+        setLoading(false);
+    };
 
     const handleCreateNew = () => {
         navigate('/character/races/create');
@@ -22,6 +27,34 @@ function RacesList() {
 
     const handleEditRace = (id) => {
         navigate(`/character/races/edit/${id}`);
+    };
+
+    const handleViewRace = (id) => {
+        navigate(`/character/races/view/${id}`);
+    };
+
+    const handleDeleteRace = (id) => {
+        if (window.confirm('Are you sure you want to delete this race?')) {
+            const success = deleteRace(id);
+            if (success) {
+                loadRaces(); // Refresh the list
+            } else {
+                alert('Failed to delete race');
+            }
+        }
+    };
+
+    const handleDuplicateRace = (id) => {
+        const race = races.find(r => r.id === id);
+        if (race) {
+            const newId = duplicateRace(race);
+            if (newId) {
+                loadRaces(); // Refresh the list
+                alert(`Race ${race.name} duplicated successfully`);
+            } else {
+                alert('Failed to duplicate race');
+            }
+        }
     };
 
     return (
@@ -36,7 +69,9 @@ function RacesList() {
                 </button>
             </div>
 
-            {races.length === 0 ? (
+            {loading ? (
+                <div className="loading">Loading races...</div>
+            ) : races.length === 0 ? (
                 <div className="empty-state">
                     <p>You haven't created any custom races yet.</p>
                     <button
@@ -69,9 +104,21 @@ function RacesList() {
                                 </button>
                                 <button
                                     className="button button-secondary"
-                                    onClick={() => navigate(`/character/races/view/${race.id}`)}
+                                    onClick={() => handleViewRace(race.id)}
                                 >
                                     View
+                                </button>
+                                <button
+                                    className="button button-secondary"
+                                    onClick={() => handleDuplicateRace(race.id)}
+                                >
+                                    Duplicate
+                                </button>
+                                <button
+                                    className="button button-danger"
+                                    onClick={() => handleDeleteRace(race.id)}
+                                >
+                                    Delete
                                 </button>
                             </div>
                         </div>

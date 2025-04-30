@@ -26,6 +26,7 @@ function App() {
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/character-creator">Character Creator</Link></li>
                 <li><Link to="/class-manager">Manage Classes</Link></li>
+                <li><Link to="/character/races">Manage Races</Link></li>
                 <li><Link to="/about">About</Link></li>
               </ul>
             </nav>
