@@ -1,60 +1,50 @@
-// src/components/ui/index.jsx - Complete UI Components Library
-// Replace your ENTIRE src/components/ui/index.jsx with this content
-
-import { useState, useEffect } from 'react';
+// src/components/ui/index.jsx - Complete UI Components
 import {
-    Check,
     X,
-    ChevronDown,
-    Search,
-    Plus,
-    Trash2,
-    Edit,
-    Eye,
+    Loader2,
     AlertCircle,
-    CheckCircle,
-    Info,
-    XCircle,
-    Loader2
+    Search,
+    Filter,
+    Eye,
+    Plus
 } from 'lucide-react';
 
 // ===================
-// BUTTON COMPONENTS
+// BUTTON COMPONENT
 // ===================
 
 export const Button = ({
     children,
     variant = 'primary',
     size = 'md',
-    disabled = false,
-    loading = false,
     icon: Icon,
+    loading = false,
+    disabled = false,
     className = '',
     ...props
 }) => {
     let buttonClass = 'btn';
 
-    // Add variant classes
+    // Variants
     if (variant === 'primary') buttonClass += ' btn-primary';
     else if (variant === 'secondary') buttonClass += ' btn-secondary';
     else if (variant === 'outline') buttonClass += ' btn-outline';
     else if (variant === 'ghost') buttonClass += ' btn-ghost';
     else if (variant === 'danger') buttonClass += ' btn-danger';
 
-    // Add size classes
+    // Sizes
     if (size === 'sm') buttonClass += ' btn-sm';
     else if (size === 'lg') buttonClass += ' btn-lg';
 
-    // Add disabled class
-    if (disabled || loading) buttonClass += ' btn-disabled';
+    // States
+    if (loading || disabled) buttonClass += ' btn-disabled';
 
-    // Add custom className
     if (className) buttonClass += ' ' + className;
 
     return (
         <button
             className={buttonClass}
-            disabled={disabled || loading}
+            disabled={loading || disabled}
             {...props}
         >
             {loading ? (
@@ -73,6 +63,16 @@ export const Button = ({
         </button>
     );
 };
+
+// ===================
+// ACTION BUTTON
+// ===================
+
+export const ActionButton = ({ children, variant = 'ghost', size = 'sm', ...props }) => (
+    <Button variant={variant} size={size} {...props}>
+        {children}
+    </Button>
+);
 
 // ===================
 // CARD COMPONENTS
@@ -149,133 +149,80 @@ export const Input = ({
                 </p>
             )}
             {helperText && !error && (
-                <p className="form-helper">{helperText}</p>
-            )}
-        </div>
-    );
-};
-
-export const Textarea = ({
-    label,
-    error,
-    helperText,
-    className = '',
-    required = false,
-    rows = 4,
-    ...props
-}) => {
-    let textareaClass = 'form-textarea';
-    if (error) textareaClass += ' form-input-error';
-    if (className) textareaClass += ' ' + className;
-
-    return (
-        <div className="form-field">
-            {label && (
-                <label className="form-label">
-                    {label}
-                    {required && <span className="form-required">*</span>}
-                </label>
-            )}
-            <textarea
-                className={textareaClass}
-                rows={rows}
-                {...props}
-            />
-            {error && (
-                <p className="form-error">
-                    <AlertCircle className="form-error-icon" />
-                    {error}
+                <p className="form-helper">
+                    {helperText}
                 </p>
-            )}
-            {helperText && !error && (
-                <p className="form-helper">{helperText}</p>
-            )}
-        </div>
-    );
-};
-
-export const Select = ({
-    label,
-    error,
-    helperText,
-    options = [],
-    placeholder = 'Select an option',
-    className = '',
-    required = false,
-    ...props
-}) => {
-    let selectClass = 'form-select';
-    if (error) selectClass += ' form-input-error';
-    if (className) selectClass += ' ' + className;
-
-    return (
-        <div className="form-field">
-            {label && (
-                <label className="form-label">
-                    {label}
-                    {required && <span className="form-required">*</span>}
-                </label>
-            )}
-            <div className="form-select-container">
-                <select className={selectClass} {...props}>
-                    <option value="">{placeholder}</option>
-                    {options.map((option, index) => (
-                        <option key={index} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-                <div className="form-select-icon">
-                    <ChevronDown className="form-icon" />
-                </div>
-            </div>
-            {error && (
-                <p className="form-error">
-                    <AlertCircle className="form-error-icon" />
-                    {error}
-                </p>
-            )}
-            {helperText && !error && (
-                <p className="form-helper">{helperText}</p>
             )}
         </div>
     );
 };
 
 // ===================
-// CHECKBOX & RADIO
+// SEARCH INPUT
 // ===================
 
-export const Checkbox = ({
-    label,
-    description,
-    checked = false,
+export const SearchInput = ({
+    placeholder = 'Search...',
+    value = '',
     onChange,
-    className = '',
-    ...props
+    onClear,
+    className = ''
 }) => {
+    let inputClass = 'search-input';
+    if (className) inputClass += ' ' + className;
+
     return (
-        <div className={`form-checkbox ${className}`}>
-            <div className="form-checkbox-input-wrapper">
+        <div className="search-container">
+            <div className="search-input-wrapper">
+                <Search className="search-icon" />
                 <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={onChange}
-                    className="form-checkbox-input"
-                    {...props}
+                    type="text"
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(e) => onChange?.(e.target.value)}
+                    className={inputClass}
                 />
+                {value && onClear && (
+                    <button
+                        type="button"
+                        onClick={onClear}
+                        className="search-clear"
+                    >
+                        <X className="search-clear-icon" />
+                    </button>
+                )}
             </div>
-            {label && (
-                <div className="form-checkbox-content">
-                    <label className="form-checkbox-label">
-                        {label}
-                    </label>
-                    {description && (
-                        <p className="form-checkbox-description">{description}</p>
-                    )}
-                </div>
-            )}
         </div>
+    );
+};
+
+// ===================
+// BADGE COMPONENT
+// ===================
+
+export const Badge = ({
+    children,
+    variant = 'default',
+    size = 'sm',
+    className = ''
+}) => {
+    let badgeClass = 'badge';
+
+    if (variant === 'default') badgeClass += ' badge-default';
+    else if (variant === 'primary') badgeClass += ' badge-primary';
+    else if (variant === 'success') badgeClass += ' badge-success';
+    else if (variant === 'warning') badgeClass += ' badge-warning';
+    else if (variant === 'error') badgeClass += ' badge-error';
+    else if (variant === 'outline') badgeClass += ' badge-outline';
+
+    if (size === 'md') badgeClass += ' badge-md';
+
+    if (className) badgeClass += ' ' + className;
+
+    return (
+        <span className={badgeClass}>
+            {children}
+        </span>
     );
 };
 
@@ -299,44 +246,62 @@ export const Alert = ({
 
     if (className) alertClass += ' ' + className;
 
-    const getIcon = () => {
-        switch (variant) {
-            case 'success': return CheckCircle;
-            case 'warning': return AlertCircle;
-            case 'error': return XCircle;
-            default: return Info;
-        }
-    };
-
-    const Icon = getIcon();
-
     return (
         <div className={alertClass}>
             <div className="alert-content">
-                <div className="alert-icon">
-                    <Icon className="alert-icon-svg" />
-                </div>
-                <div className="alert-body">
-                    {title && (
-                        <h3 className="alert-title">
-                            {title}
-                        </h3>
-                    )}
-                    <div className="alert-message">
-                        {children}
-                    </div>
-                </div>
-                {onClose && (
-                    <div className="alert-close">
-                        <button
-                            onClick={onClose}
-                            className="alert-close-button"
-                        >
-                            <X className="alert-close-icon" />
-                        </button>
+                {title && (
+                    <div className="alert-title">
+                        {title}
                     </div>
                 )}
+                <div className="alert-body">
+                    {children}
+                </div>
             </div>
+            {onClose && (
+                <button
+                    onClick={onClose}
+                    className="alert-close"
+                >
+                    <X className="alert-close-icon" />
+                </button>
+            )}
+        </div>
+    );
+};
+
+// ===================
+// EMPTY STATE
+// ===================
+
+export const EmptyState = ({
+    title,
+    description,
+    action,
+    icon: Icon,
+    className = ''
+}) => {
+    let emptyClass = 'empty-state';
+    if (className) emptyClass += ' ' + className;
+
+    return (
+        <div className={emptyClass}>
+            {Icon && (
+                <div className="empty-state-icon">
+                    <Icon className="empty-icon" />
+                </div>
+            )}
+            <h3 className="empty-state-title">
+                {title}
+            </h3>
+            <p className="empty-state-description">
+                {description}
+            </p>
+            {action && (
+                <div className="empty-state-action">
+                    {action}
+                </div>
+            )}
         </div>
     );
 };
@@ -346,55 +311,43 @@ export const Alert = ({
 // ===================
 
 export const Modal = ({
+    children,
+    title,
     isOpen,
     onClose,
-    title,
-    children,
     size = 'md',
+    showCloseButton = true,
     className = ''
 }) => {
-    let modalClass = 'modal-content';
+    if (!isOpen) return null;
 
+    let modalClass = 'modal';
     if (size === 'sm') modalClass += ' modal-sm';
     else if (size === 'lg') modalClass += ' modal-lg';
     else if (size === 'xl') modalClass += ' modal-xl';
 
-    if (className) modalClass += ' ' + className;
-
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
-
-    if (!isOpen) return null;
+    let contentClass = 'modal-content';
+    if (className) contentClass += ' ' + className;
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-container">
-                <div
-                    className="modal-backdrop"
-                    onClick={onClose}
-                />
-
+        <div className="modal-overlay" onClick={onClose}>
+            <div className={contentClass} onClick={(e) => e.stopPropagation()}>
                 <div className={modalClass}>
-                    {title && (
+                    {(title || showCloseButton) && (
                         <div className="modal-header">
-                            <h3 className="modal-title">
-                                {title}
-                            </h3>
-                            <button
-                                onClick={onClose}
-                                className="modal-close-button"
-                            >
-                                <X className="modal-close-icon" />
-                            </button>
+                            {title && (
+                                <h3 className="modal-title">
+                                    {title}
+                                </h3>
+                            )}
+                            {showCloseButton && (
+                                <button
+                                    onClick={onClose}
+                                    className="modal-close-button"
+                                >
+                                    <X className="modal-close-icon" />
+                                </button>
+                            )}
                         </div>
                     )}
                     <div className="modal-body">
@@ -436,134 +389,21 @@ export const LoadingCard = () => (
 );
 
 // ===================
-// BADGE COMPONENT
+// FILTER COMPONENT
 // ===================
 
-export const Badge = ({
-    children,
-    variant = 'default',
-    size = 'sm',
-    className = ''
-}) => {
-    let badgeClass = 'badge';
-
-    if (variant === 'default') badgeClass += ' badge-default';
-    else if (variant === 'primary') badgeClass += ' badge-primary';
-    else if (variant === 'success') badgeClass += ' badge-success';
-    else if (variant === 'warning') badgeClass += ' badge-warning';
-    else if (variant === 'error') badgeClass += ' badge-error';
-    else if (variant === 'outline') badgeClass += ' badge-outline';
-
-    if (size === 'md') badgeClass += ' badge-md';
-
-    if (className) badgeClass += ' ' + className;
-
-    return (
-        <span className={badgeClass}>
-            {children}
-        </span>
-    );
-};
-
-// ===================
-// SEARCH INPUT
-// ===================
-
-export const SearchInput = ({
-    placeholder = 'Search...',
-    value = '',
-    onChange,
-    onClear,
-    className = '',
-    ...props
-}) => {
-    return (
-        <div className={`search-input ${className}`}>
-            <div className="search-input-icon">
-                <Search className="form-icon" />
-            </div>
-            <input
-                type="text"
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                className="search-input-field"
-                {...props}
-            />
-            {value && onClear && (
-                <button
-                    onClick={onClear}
-                    className="search-input-clear"
-                >
-                    <X className="form-icon" />
-                </button>
-            )}
-        </div>
-    );
-};
-
-// ===================
-// ACTION BUTTONS
-// ===================
-
-export const ActionButton = ({
-    icon: Icon,
-    onClick,
-    variant = 'ghost',
-    size = 'sm',
-    tooltip,
-    className = '',
-    ...props
-}) => {
-    let buttonClass = 'action-button';
-
-    if (variant === 'danger') buttonClass += ' action-button-danger';
-    if (size === 'md') buttonClass += ' action-button-md';
-    if (className) buttonClass += ' ' + className;
+export const FilterButton = ({ children, active = false, onClick, className = '' }) => {
+    let filterClass = 'filter-button';
+    if (active) filterClass += ' filter-button-active';
+    if (className) filterClass += ' ' + className;
 
     return (
         <button
             onClick={onClick}
-            className={buttonClass}
-            title={tooltip}
-            {...props}
+            className={filterClass}
         >
-            <Icon className="action-button-icon" />
+            <Filter className="filter-icon" />
+            {children}
         </button>
-    );
-};
-
-// ===================
-// EMPTY STATE
-// ===================
-
-export const EmptyState = ({
-    title,
-    description,
-    action,
-    icon: Icon,
-    className = ''
-}) => {
-    return (
-        <div className={`empty-state ${className}`}>
-            {Icon && (
-                <div className="empty-state-icon">
-                    <Icon className="empty-state-icon-svg" />
-                </div>
-            )}
-            <h3 className="empty-state-title">
-                {title}
-            </h3>
-            {description && (
-                <p className="empty-state-description">
-                    {description}
-                </p>
-            )}
-            {action && (
-                <div className="empty-state-action">
-                    {action}
-                </div>
-            )}
-        </div>
     );
 };

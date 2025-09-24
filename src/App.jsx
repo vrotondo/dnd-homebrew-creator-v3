@@ -15,6 +15,8 @@ import {
   Crown
 } from 'lucide-react';
 
+import './App.css';
+
 // Import your existing pages
 import HomePage from './pages/HomePage';
 import CharacterCreatorPage from './pages/CharacterCreatorPage';
@@ -58,8 +60,8 @@ function App() {
   return (
     <Router>
       <div className={`min-h-screen transition-all duration-300 ${darkMode
-          ? 'bg-gray-900 text-gray-100'
-          : 'bg-gradient-to-br text-gray-900'
+        ? 'bg-gray-900 text-gray-100'
+        : 'bg-gradient-to-br text-gray-900'
         }`} style={{
           background: darkMode
             ? '#111827'
@@ -113,8 +115,8 @@ function App() {
             <button
               onClick={() => setSidebarOpen(false)}
               className={`p-1 rounded-md transition-colors lg:hidden ${darkMode
-                  ? 'hover:bg-gray-700 text-gray-300'
-                  : 'hover:bg-gray-100 text-gray-600'
+                ? 'hover:bg-gray-700 text-gray-300'
+                : 'hover:bg-gray-100 text-gray-600'
                 }`}
             >
               <X className="w-5 h-5" />
@@ -162,8 +164,8 @@ function App() {
             <button
               onClick={toggleTheme}
               className={`w-full flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${darkMode
-                  ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
               {darkMode ? (
@@ -198,8 +200,8 @@ function App() {
             <button
               onClick={() => setSidebarOpen(true)}
               className={`p-2 rounded-md transition-colors lg:hidden ${darkMode
-                  ? 'hover:bg-gray-700 text-gray-300'
-                  : 'hover:bg-gray-100 text-gray-600'
+                ? 'hover:bg-gray-700 text-gray-300'
+                : 'hover:bg-gray-100 text-gray-600'
                 }`}
             >
               <Menu className="w-5 h-5" />
