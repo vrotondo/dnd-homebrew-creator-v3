@@ -1,0 +1,542 @@
+/* src/styles/dnd-components.css - CSS for D&D-specific Form Components */
+
+/* =================== */
+/* ABILITY SCORE SELECTOR */
+/* =================== */
+
+.ability-score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.ability-score-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ability-score-option:hover:not(.disabled) {
+    border-color: #9333ea;
+    background: #f3e8ff;
+}
+
+.ability-score-option.selected {
+    border-color: #9333ea;
+    background: #9333ea;
+    color: white;
+}
+
+.ability-score-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ability-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.ability-short {
+    font-size: 0.625rem;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+.dark .ability-score-option {
+    background: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+.dark .ability-score-option:hover:not(.disabled) {
+    background: #374151;
+    border-color: #9333ea;
+}
+
+.dark .ability-score-option.selected {
+    background: #9333ea;
+    color: white;
+}
+
+/* =================== */
+/* SKILL SELECTOR      */
+/* =================== */
+
+.skill-selector {
+    margin-top: 0.5rem;
+}
+
+.skill-group {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.skill-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f9fafb;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.skill-group-header:hover {
+    background: #f3f4f6;
+}
+
+.skill-group-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-group-name {
+    font-weight: 500;
+    color: #374151;
+}
+
+.skill-group-content {
+    padding: 0.5rem 1rem 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.skill-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.skill-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.skill-option input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+}
+
+.skill-name {
+    flex: 1;
+}
+
+.skill-ability {
+    color: #6b7280;
+    font-size: 0.75rem;
+}
+
+.skills-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+}
+
+.dark .skill-group {
+    border-color: #4b5563;
+}
+
+.dark .skill-group-header {
+    background: #374151;
+    color: #f3f4f6;
+}
+
+.dark .skill-group-header:hover {
+    background: #4b5563;
+}
+
+.dark .skill-group-name {
+    color: #f3f4f6;
+}
+
+.dark .skill-option {
+    color: #d1d5db;
+}
+
+.dark .skill-ability {
+    color: #9ca3af;
+}
+
+.dark .skills-list {
+    border-color: #4b5563;
+    background: #1f2937;
+}
+
+/* =================== */
+/* PROFICIENCY SELECTOR */
+/* =================== */
+
+.selected-proficiencies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    min-height: 3rem;
+}
+
+.selected-proficiency {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.remove-proficiency {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.remove-proficiency:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.proficiency-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+}
+
+.proficiency-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.proficiency-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.proficiency-option input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+}
+
+.custom-proficiency-input {
+    margin-top: 0.75rem;
+}
+
+.dark .selected-proficiencies {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.dark .proficiency-options {
+    border-color: #4b5563;
+    background: #1f2937;
+}
+
+.dark .proficiency-option {
+    color: #d1d5db;
+}
+
+/* =================== */
+/* HIT DIE SELECTOR    */
+/* =================== */
+
+.hit-die-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.hit-die-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hit-die-option:hover {
+    border-color: #9333ea;
+    background: #f3e8ff;
+}
+
+.hit-die-option input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    margin-top: 0.125rem;
+}
+
+.hit-die-option input[type="radio"]:checked+.hit-die-content {
+    color: #9333ea;
+}
+
+.hit-die-content {
+    flex: 1;
+}
+
+.hit-die-label {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.hit-die-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.dark .hit-die-option {
+    border-color: #4b5563;
+    background: #1f2937;
+}
+
+.dark .hit-die-option:hover {
+    border-color: #9333ea;
+    background: #374151;
+}
+
+.dark .hit-die-label {
+    color: #f3f4f6;
+}
+
+.dark .hit-die-description {
+    color: #9ca3af;
+}
+
+/* =================== */
+/* ABILITY SCORE INCREASE EDITOR */
+/* =================== */
+
+.ability-increase-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+}
+
+.ability-increase-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ability-name {
+    font-weight: 500;
+    color: #374151;
+    min-width: 120px;
+}
+
+.ability-increase-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ability-increase-controls .btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.ability-increase-value {
+    min-width: 2rem;
+    text-align: center;
+    font-weight: 600;
+    color: #059669;
+}
+
+.dark .ability-increase-editor {
+    border-color: #4b5563;
+    background: #374151;
+}
+
+.dark .ability-name {
+    color: #f3f4f6;
+}
+
+/* =================== */
+/* FEATURE EDITOR      */
+/* =================== */
+
+.feature-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.feature-editor .form-input {
+    font-weight: 500;
+}
+
+.feature-editor .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* =================== */
+/* RESPONSIVE DESIGN   */
+/* =================== */
+
+@media (max-width: 768px) {
+    .ability-score-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .hit-die-options {
+        grid-template-columns: 1fr;
+    }
+
+    .skill-group-content {
+        grid-template-columns: 1fr;
+    }
+
+    .skills-list {
+        grid-template-columns: 1fr;
+    }
+
+    .proficiency-options {
+        grid-template-columns: 1fr;
+    }
+
+    .ability-increase-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .ability-increase-controls {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .ability-score-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .selected-proficiencies {
+        padding: 0.5rem;
+    }
+}
+
+/* =================== */
+/* UTILITY CLASSES     */
+/* =================== */
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.form-section-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.dark .form-section {
+    border-bottom-color: #374151;
+}
+
+.dark .form-section-title {
+    color: #f3f4f6;
+}
+
+.dark .form-section-description {
+    color: #9ca3af;
+}
+
+/* =================== */
+/* VALIDATION STATES   */
+/* =================== */
+
+.form-field.has-error .ability-score-option,
+.form-field.has-error .skill-group,
+.form-field.has-error .hit-die-option,
+.form-field.has-error .proficiency-options,
+.form-field.has-error .ability-increase-editor {
+    border-color: #ef4444;
+}
+
+.form-field.has-success .ability-score-option,
+.form-field.has-success .skill-group,
+.form-field.has-success .hit-die-option,
+.form-field.has-success .proficiency-options,
+.form-field.has-success .ability-increase-editor {
+    border-color: #10b981;
+}

@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 
 import './App.css';
+import './styles/foundation.css';
+import './styles/dnd-components.css';
 
 // Import your existing pages
 import HomePage from './pages/HomePage';
