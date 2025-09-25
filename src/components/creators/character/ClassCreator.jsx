@@ -1,4 +1,4 @@
-// src/components/creators/character/ClassCreator.jsx - Modernized Version
+// src/components/creators/character/ClassCreator.jsx - Complete Modernized Version
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -40,7 +40,8 @@ import {
     ArrowRight,
     Eye,
     AlertTriangle,
-    CheckCircle
+    CheckCircle,
+    X
 } from 'lucide-react';
 
 const STEPS = [
@@ -267,155 +268,192 @@ export default function ClassCreator() {
         return 'disabled';
     };
 
+    const getStepIcon = (step, status) => {
+        if (status === 'completed') return <CheckCircle className="w-5 h-5" />;
+        if (status === 'current') return <div className="w-2 h-2 bg-blue-600 rounded-full" />;
+        return <div className="w-2 h-2 bg-gray-300 rounded-full" />;
+    };
+
     if (loading) {
         return <LoadingSpinner message="Loading class data..." />;
     }
 
     return (
         <NavigationGuard hasUnsavedChanges={hasUnsavedChanges}>
-            <div className="class-creator">
+            <div className="class-creator min-h-screen bg-gray-50 dark:bg-gray-900">
                 <PageHeader
                     title={isEditing ? `Edit ${classData.name || 'Class'}` : 'Create New Class'}
-                    subtitle={isEditing ? 'Modify your homebrew class' : 'Design a custom D&D 5E character class'}
-                    actions={
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={handleExit}
-                                disabled={saving}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={() => handleSave()}
-                                loading={saving}
-                                disabled={!classData.name || Object.keys(errors).length > 0}
-                            >
-                                <Save className="w-4 h-4 mr-2" />
-                                {isEditing ? 'Save Changes' : 'Create Class'}
-                            </Button>
-                        </div>
+                    subtitle={isEditing
+                        ? 'Modify your existing character class'
+                        : 'Design a new D&D character class with unique abilities and features'
+                    }
+                    actionButton={
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleExit}
+                            className="gap-2"
+                        >
+                            <X className="w-4 h-4" />
+                            Exit
+                        </Button>
                     }
                 />
 
-                <div className="class-creator-content">
-                    {/* Step Navigation */}
-                    <Card className="step-navigation">
-                        <CardContent className="p-4">
-                            <div className="steps-list">
-                                {STEPS.map((step) => {
-                                    const status = getStepStatus(step.id);
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        {/* Steps Sidebar */}
+                        <div className="lg:col-span-1">
+                            <Card className="sticky top-6">
+                                <CardHeader>
+                                    <h3 className="text-lg font-semibold">Progress</h3>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {STEPS.map((step) => {
+                                        const status = getStepStatus(step.id);
+                                        return (
+                                            <button
+                                                key={step.id}
+                                                onClick={() => goToStep(step.id)}
+                                                disabled={status === 'disabled'}
+                                                className={`
+                                                    w-full text-left p-3 rounded-lg border transition-all duration-200
+                                                    ${status === 'current'
+                                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
+                                                        : status === 'completed'
+                                                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30'
+                                                            : status === 'available'
+                                                                ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                                : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 opacity-50 cursor-not-allowed'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {getStepIcon(step.id, status)}
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className={`text-sm font-medium ${status === 'current' ? 'text-blue-900 dark:text-blue-100' :
+                                                                status === 'completed' ? 'text-green-900 dark:text-green-100' :
+                                                                    status === 'available' ? 'text-gray-900 dark:text-gray-100' :
+                                                                        'text-gray-500 dark:text-gray-400'
+                                                            }`}>
+                                                            {step.title}
+                                                        </div>
+                                                        <div className={`text-xs mt-1 ${status === 'current' ? 'text-blue-600 dark:text-blue-300' :
+                                                                status === 'completed' ? 'text-green-600 dark:text-green-300' :
+                                                                    status === 'available' ? 'text-gray-500 dark:text-gray-400' :
+                                                                        'text-gray-400 dark:text-gray-500'
+                                                            }`}>
+                                                            {step.description}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
 
-                                    return (
-                                        <button
-                                            key={step.id}
-                                            onClick={() => goToStep(step.id)}
-                                            disabled={status === 'disabled'}
-                                            className={`step-item step-${status}`}
-                                        >
-                                            <div className="step-number">
-                                                {status === 'completed' ? (
-                                                    <CheckCircle className="w-4 h-4" />
-                                                ) : status === 'current' ? (
-                                                    <div className="step-current-indicator" />
-                                                ) : (
-                                                    step.id
-                                                )}
-                                            </div>
-                                            <div className="step-info">
-                                                <div className="step-title">{step.title}</div>
-                                                <div className="step-description">{step.description}</div>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Main Content */}
-                    <div className="step-content">
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">
-                                            Step {currentStep}: {STEPS[currentStep - 1].title}
-                                        </h3>
-                                        <p className="text-gray-600">
-                                            {STEPS[currentStep - 1].description}
-                                        </p>
+                                    {/* Progress Indicator */}
+                                    <div className="pt-4 border-t">
+                                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                            <span>Progress</span>
+                                            <span>{Math.round((currentStep / STEPS.length) * 100)}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+                                            />
+                                        </div>
                                     </div>
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                                    {Object.keys(errors).length > 0 && (
-                                        <Badge variant="error">
-                                            <AlertTriangle className="w-3 h-3 mr-1" />
-                                            {Object.keys(errors).length} Error(s)
-                                        </Badge>
-                                    )}
-                                </div>
-                            </CardHeader>
+                        {/* Main Content */}
+                        <div className="lg:col-span-3">
+                            <Card>
+                                <CardHeader className="border-b">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h2 className="text-xl font-semibold">
+                                                Step {currentStep}: {STEPS[currentStep - 1].title}
+                                            </h2>
+                                            <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                                {STEPS[currentStep - 1].description}
+                                            </p>
+                                        </div>
 
-                            <CardContent>
-                                {renderStepContent()}
-                            </CardContent>
-                        </Card>
+                                        {hasUnsavedChanges && (
+                                            <Badge variant="warning" className="gap-1">
+                                                <AlertTriangle className="w-3 h-3" />
+                                                Unsaved Changes
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </CardHeader>
 
-                        {/* Step Navigation Buttons */}
-                        <div className="step-navigation-buttons">
-                            <Button
-                                variant="outline"
-                                onClick={prevStep}
-                                disabled={currentStep === 1}
-                            >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Previous
-                            </Button>
+                                <CardContent className="p-6">
+                                    {renderStepContent()}
+                                </CardContent>
 
-                            <div className="flex gap-2">
-                                {currentStep === STEPS.length ? (
-                                    <>
+                                {/* Navigation Footer */}
+                                <div className="border-t bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
+                                    <div className="flex items-center justify-between">
                                         <Button
                                             variant="outline"
-                                            onClick={() => handleSave(false)}
-                                            disabled={saving}
+                                            onClick={prevStep}
+                                            disabled={currentStep === 1}
+                                            className="gap-2"
                                         >
-                                            <Eye className="w-4 h-4 mr-2" />
-                                            Save Draft
+                                            <ArrowLeft className="w-4 h-4" />
+                                            Previous
                                         </Button>
-                                        <Button
-                                            onClick={() => handleSave()}
-                                            loading={saving}
-                                            disabled={!classData.name || Object.keys(errors).length > 0}
-                                        >
-                                            <Save className="w-4 h-4 mr-2" />
-                                            {isEditing ? 'Save Changes' : 'Create Class'}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button
-                                        onClick={nextStep}
-                                        disabled={!validateCurrentStep()}
-                                    >
-                                        Next
-                                        <ArrowRight className="w-4 h-4 ml-2" />
-                                    </Button>
-                                )}
-                            </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => handleSave(false)}
+                                                disabled={saving}
+                                                className="gap-2"
+                                            >
+                                                <Save className="w-4 h-4" />
+                                                {saving ? 'Saving...' : 'Save Draft'}
+                                            </Button>
+
+                                            {currentStep < STEPS.length ? (
+                                                <Button
+                                                    onClick={nextStep}
+                                                    className="gap-2"
+                                                >
+                                                    Next
+                                                    <ArrowRight className="w-4 h-4" />
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    onClick={() => handleSave(true)}
+                                                    disabled={saving}
+                                                    className="gap-2"
+                                                >
+                                                    <Save className="w-4 h-4" />
+                                                    {saving ? 'Saving...' : 'Save & Finish'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
                         </div>
                     </div>
                 </div>
 
-                {/* Exit Confirmation */}
+                {/* Exit Confirmation Dialog */}
                 <ConfirmDialog
                     isOpen={showExitDialog}
                     onClose={() => setShowExitDialog(false)}
                     onConfirm={confirmExit}
                     title="Unsaved Changes"
-                    message="You have unsaved changes. Are you sure you want to leave? Your changes will be lost."
-                    confirmText="Leave"
-                    cancelText="Stay"
-                    variant="warning"
+                    message="You have unsaved changes. Are you sure you want to exit? Your progress will be lost."
+                    confirmText="Exit Without Saving"
+                    confirmVariant="danger"
                 />
             </div>
         </NavigationGuard>

@@ -725,3 +725,427 @@
         width: 100%;
     }
 }
+
+/* =================== */
+/* TEXT UTILITIES      */
+/* =================== */
+
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* =================== */
+/* LEVEL PROGRESSION   */
+/* =================== */
+
+.level-progression {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    padding: 0.5rem;
+}
+
+.dark .level-progression {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.level-row {
+    background: white;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.level-row:last-child {
+    margin-bottom: 0;
+}
+
+.level-row.important-level {
+    box-shadow: 0 1px 3px 0 rgba(59, 130, 246, 0.1);
+}
+
+.level-row.has-features {
+    border-left-width: 4px;
+    border-left-color: #10b981;
+}
+
+.level-header {
+    transition: background-color 0.2s ease;
+}
+
+.level-header:hover {
+    background-color: #f8fafc;
+}
+
+.dark .level-row {
+    background: #374151;
+}
+
+.dark .level-header:hover {
+    background-color: #4b5563;
+}
+
+.level-content {
+    border-top: 1px solid #e5e7eb;
+    background-color: #f8fafc;
+}
+
+.dark .level-content {
+    border-color: #4b5563;
+    background-color: #1f2937;
+}
+
+.feature-card {
+    transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* =================== */
+/* FEATURE TEMPLATES   */
+/* =================== */
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.template-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.template-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 1px 3px 0 rgba(59, 130, 246, 0.1);
+}
+
+.dark .template-card {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.dark .template-card:hover {
+    border-color: #60a5fa;
+}
+
+/* =================== */
+/* FORM ENHANCEMENTS   */
+/* =================== */
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section-description {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.dark .form-section-title {
+    color: #f9fafb;
+}
+
+.dark .form-section-description {
+    color: #9ca3af;
+}
+
+.form-field {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.dark .form-label {
+    color: #d1d5db;
+}
+
+.form-helper {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.dark .form-helper {
+    color: #9ca3af;
+}
+
+.form-error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 0.25rem;
+}
+
+.dark .form-error {
+    color: #fca5a5;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #1f2937;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark .form-select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+.dark .form-select:focus {
+    border-color: #60a5fa;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #1f2937;
+    font-size: 0.875rem;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark .form-textarea {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+.dark .form-textarea:focus {
+    border-color: #60a5fa;
+}
+
+.form-checkbox {
+    width: 1rem;
+    height: 1rem;
+    color: #3b82f6;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+}
+
+.dark .form-checkbox {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+/* =================== */
+/* EQUIPMENT STEP      */
+/* =================== */
+
+.equipment-suggestions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.suggestion-category {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+}
+
+.dark .suggestion-category {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.suggestion-item {
+    display: block;
+    font-size: 0.75rem;
+    color: #3b82f6;
+    text-decoration: none;
+    padding: 0.125rem 0;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background-color: #dbeafe;
+    text-decoration: none;
+}
+
+.dark .suggestion-item:hover {
+    background-color: #1e3a8a;
+}
+
+/* =================== */
+/* PROFICIENCIES STEP  */
+/* =================== */
+
+.armor-option,
+.weapon-option {
+    display: block;
+    cursor: pointer;
+}
+
+.proficiency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* =================== */
+/* SPELLCASTING STEP   */
+/* =================== */
+
+.caster-type-option {
+    display: block;
+    cursor: pointer;
+}
+
+.spellcasting-summary {
+    padding: 1rem;
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .spellcasting-summary {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.spellcasting-basics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* =================== */
+/* PREVIEW STEP        */
+/* =================== */
+
+.preview-status {
+    margin-bottom: 2rem;
+}
+
+.status-card {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border-width: 2px;
+}
+
+.completion-checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* =================== */
+/* RESPONSIVE DESIGN   */
+/* =================== */
+
+@media (max-width: 768px) {
+    .level-progression {
+        max-height: 50vh;
+    }
+
+    .form-section-title {
+        font-size: 1.125rem;
+    }
+
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .equipment-suggestions {
+        grid-template-columns: 1fr;
+    }
+
+    .proficiency-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .spellcasting-basics {
+        grid-template-columns: 1fr;
+    }
+
+    .completion-checks {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .completion-checks {
+        grid-template-columns: 1fr;
+    }
+}
