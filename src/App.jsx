@@ -20,14 +20,14 @@ import './styles/foundation.css';
 import './styles/dnd-components.css';
 import './styles/class-creator.css';
 
-// Import your existing pages
 import HomePage from './pages/HomePage';
 import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import AboutPage from './pages/AboutPage';
 import ClassManager from './pages/ClassManager';
 
-// Import the new ClassCreator
 import ClassCreator from './components/creators/character/ClassCreator';
+import RaceCreator from './components/creators/character/RaceCreator';
+import BackgroundCreator from './components/creators/character/BackgroundCreator';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -214,8 +214,10 @@ function App() {
                 <Route path="/character-creator/class/new" element={<ClassCreator />} />
                 <Route path="/character-creator/class/:id/edit" element={<ClassCreator />} />
                 <Route path="/character-creator/subclass/new" element={<PlaceholderPage title="Subclass Creator (Coming Soon)" />} />
-                <Route path="/character/races/create" element={<PlaceholderPage title="Race Creator (Coming Soon)" />} />
-                <Route path="/character/backgrounds/create" element={<PlaceholderPage title="Background Creator (Coming Soon)" />} />
+                <Route path="/character/races/create" element={<RaceCreator />} />
+                <Route path="/character/races/:id/edit" element={<RaceCreator />} />
+                <Route path="/character/backgrounds/create" element={<BackgroundCreator />} />
+                <Route path="/character/backgrounds/:id/edit" element={<BackgroundCreator />} />
 
                 {/* Other content type routes (placeholder for now) */}
                 <Route path="/races" element={<PlaceholderPage title="Race Manager" />} />

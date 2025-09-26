@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveRace, getRaceById } from '../../../utils/storageService';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import ExportModal from '../../export/ExportModal';
 import RacialTraits from './RacialTraits';
 import Subraces from './Subraces';
@@ -42,6 +43,15 @@ function RaceCreator({ onSave, onCancel }) {
     const [touched, setTouched] = useState({});
     const [showExportModal, setShowExportModal] = useState(false);
 
+    const steps = [
+        { id: 1, name: 'Basic Info' },
+        { id: 2, name: 'Abilities' },
+        { id: 3, name: 'Languages' },
+        { id: 4, name: 'Traits' },
+        { id: 5, name: 'Subraces' },
+        { id: 6, name: 'Preview' }
+    ];
+
     // Load existing race if editing
     useEffect(() => {
         if (id) {
@@ -68,415 +78,372 @@ function RaceCreator({ onSave, onCancel }) {
 
         // Validate ability score increases
         const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-        if (touched.abilityScoreIncreases && totalASI !== 2 && totalASI !== 3) {
-            newErrors.abilityScoreIncreases = 'Total ability score increases should equal 2 or 3';
+        if (touched.abilityScoreIncreases && totalASI < 1) {
+            newErrors.abilityScoreIncreases = 'At least one ability score increase is required';
+        } else if (touched.abilityScoreIncreases && totalASI > 3) {
+            newErrors.abilityScoreIncreases = 'Total ability score increases cannot exceed 3';
         }
 
-        // Validate languages
-        if (touched.languages && (!raceData.languages || raceData.languages.length === 0)) {
+        if (touched.languages && raceData.languages.length === 0) {
             newErrors.languages = 'At least one language is required';
         }
 
         setErrors(newErrors);
     }, [raceData, touched]);
 
+    const updateRaceData = (updates) => {
+        setRaceData(prev => ({ ...prev, ...updates }));
+    };
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setRaceData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+
+        if (name.includes('.')) {
+            const [parent, child] = name.split('.');
+            updateRaceData({
+                [parent]: { ...raceData[parent], [child]: type === 'checkbox' ? checked : value }
+            });
+        } else {
+            updateRaceData({ [name]: type === 'checkbox' ? checked : value });
+        }
+
         setTouched(prev => ({ ...prev, [name]: true }));
     };
 
     const handleAbilityChange = (ability, value) => {
-        const numValue = parseInt(value) || 0;
-        setRaceData(prev => ({
-            ...prev,
-            abilityScoreIncreases: {
-                ...prev.abilityScoreIncreases,
-                [ability]: numValue
-            }
-        }));
+        const numValue = Math.max(0, Math.min(3, parseInt(value) || 0));
+        updateRaceData({
+            abilityScoreIncreases: { ...raceData.abilityScoreIncreases, [ability]: numValue }
+        });
         setTouched(prev => ({ ...prev, abilityScoreIncreases: true }));
-    };
-
-    const handleVisionChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setRaceData(prev => ({
-            ...prev,
-            vision: {
-                ...prev.vision,
-                [name]: type === 'checkbox' ? checked : (parseInt(value) || 0)
-            }
-        }));
     };
 
     const handleLanguageChange = (language, checked) => {
         if (checked) {
-            setRaceData(prev => ({
-                ...prev,
-                languages: [...prev.languages, language]
-            }));
+            updateRaceData({ languages: [...raceData.languages, language] });
         } else {
-            setRaceData(prev => ({
-                ...prev,
-                languages: prev.languages.filter(l => l !== language)
-            }));
+            updateRaceData({ languages: raceData.languages.filter(l => l !== language) });
         }
         setTouched(prev => ({ ...prev, languages: true }));
     };
 
-    const updateRaceData = (newData) => {
-        setRaceData(prev => ({ ...prev, ...newData }));
-    };
+    const validateStep = () => {
+        const newErrors = {};
 
-    // Check if current step is valid
-    const isStepValid = (step) => {
-        switch (step) {
-            case 1: // Basic info
-                return raceData.name &&
-                    raceData.description &&
-                    raceData.description.length >= 20;
-            case 2: // Ability scores
-                const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-                return totalASI === 2 || totalASI === 3;
-            case 3: // Languages & Proficiencies
-                return raceData.languages && raceData.languages.length > 0;
-            default:
-                return true;
-        }
-    };
-
-    const handleSave = () => {
-        // Validate basic info
-        if (!isStepValid(1)) {
-            setCurrentStep(1);
-            setTouched({
-                name: true,
-                description: true
-            });
-            return;
+        if (currentStep === 1) {
+            if (!raceData.name.trim()) newErrors.name = 'Race name is required';
+            if (!raceData.description.trim()) newErrors.description = 'Description is required';
+            else if (raceData.description.length < 20) newErrors.description = 'Description should be at least 20 characters';
         }
 
-        // Validate ability scores
-        if (!isStepValid(2)) {
-            setCurrentStep(2);
-            setTouched(prev => ({ ...prev, abilityScoreIncreases: true }));
-            return;
-        }
-
-        // Validate languages
-        if (!isStepValid(3)) {
-            setCurrentStep(3);
-            setTouched(prev => ({ ...prev, languages: true }));
-            return;
-        }
-
-        // Save race
-        const savedId = saveRace(raceData);
-
-        if (savedId) {
-            alert('Race saved successfully!');
-            if (typeof onSave === 'function') {
-                onSave();
+        if (currentStep === 2) {
+            const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
+            if (totalASI < 1) {
+                newErrors.abilityScoreIncreases = 'At least one ability score increase is required';
+            } else if (totalASI > 3) {
+                newErrors.abilityScoreIncreases = 'Total ability score increases cannot exceed 3';
             }
-        } else {
-            alert('Failed to save race. Please try again.');
         }
+
+        if (currentStep === 3) {
+            if (raceData.languages.length === 0) {
+                newErrors.languages = 'At least one language is required';
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const nextStep = () => {
-        if (isStepValid(currentStep)) {
-            setCurrentStep(prev => prev + 1);
-        } else {
-            // Mark fields as touched to show validation errors
-            if (currentStep === 1) {
-                setTouched({
-                    name: true,
-                    description: true
-                });
-            } else if (currentStep === 2) {
-                setTouched(prev => ({ ...prev, abilityScoreIncreases: true }));
-            } else if (currentStep === 3) {
-                setTouched(prev => ({ ...prev, languages: true }));
-            }
+        if (validateStep() && currentStep < steps.length) {
+            setCurrentStep(currentStep + 1);
         }
     };
 
     const prevStep = () => {
-        setCurrentStep(prev => prev - 1);
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1);
+        }
     };
 
-    const steps = [
-        { id: 1, name: 'Basic Info' },
-        { id: 2, name: 'Abilities & Traits' },
-        { id: 3, name: 'Languages' },
-        { id: 4, name: 'Racial Traits' },
-        { id: 5, name: 'Subraces' },
-        { id: 6, name: 'Preview' }
-    ];
+    const handleSave = () => {
+        if (validateStep()) {
+            try {
+                const savedId = saveRace(raceData);
+                if (onSave) {
+                    onSave(savedId);
+                } else {
+                    navigate('/races');
+                }
+            } catch (error) {
+                console.error('Error saving race:', error);
+                alert('Error saving race. Please try again.');
+            }
+        }
+    };
 
     const renderStepContent = () => {
         switch (currentStep) {
-            case 1: // Basic info
+            case 1: // Basic Info
                 return (
-                    <div className="form-group">
-                        <div className="form-field">
-                            <label htmlFor="name">Race Name*</label>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Race Name *</label>
                             <input
                                 type="text"
-                                id="name"
                                 name="name"
-                                className={`form-control ${errors.name ? 'error' : ''}`}
                                 value={raceData.name}
                                 onChange={handleInputChange}
-                                onBlur={() => setTouched(prev => ({ ...prev, name: true }))}
-                                placeholder="e.g., Mountain Folk"
+                                className={`w-full px-3 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="e.g., Dragonborn"
                             />
-                            {errors.name && <div className="error-message">{errors.name}</div>}
+                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                         </div>
 
-                        <div className="form-field">
-                            <label htmlFor="description">Description*</label>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Description *</label>
                             <textarea
-                                id="description"
                                 name="description"
-                                className={`form-control ${errors.description ? 'error' : ''}`}
                                 value={raceData.description}
                                 onChange={handleInputChange}
-                                onBlur={() => setTouched(prev => ({ ...prev, description: true }))}
                                 rows={4}
-                                placeholder="Describe your race's appearance, culture, and history..."
+                                className={`w-full px-3 py-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="Describe the race's appearance, culture, and characteristics..."
                             />
-                            {errors.description && <div className="error-message">{errors.description}</div>}
+                            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                         </div>
 
-                        <div className="form-field">
-                            <label htmlFor="size">Size</label>
-                            <select
-                                id="size"
-                                name="size"
-                                className="form-control"
-                                value={raceData.size}
-                                onChange={handleInputChange}
-                            >
-                                <option value="Tiny">Tiny</option>
-                                <option value="Small">Small</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Large">Large</option>
-                            </select>
-                            <p className="form-help">Most playable races are Small or Medium size.</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Size</label>
+                                <select
+                                    name="size"
+                                    value={raceData.size}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                >
+                                    <option value="Small">Small</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Large">Large</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Speed (feet)</label>
+                                <input
+                                    type="number"
+                                    name="speed"
+                                    value={raceData.speed}
+                                    onChange={handleInputChange}
+                                    min="10"
+                                    max="60"
+                                    step="5"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
                         </div>
 
-                        <div className="form-field">
-                            <label htmlFor="speed">Base Speed (feet)</label>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Age & Lifespan</label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    name="age.maturity"
+                                    value={raceData.age.maturity}
+                                    onChange={handleInputChange}
+                                    placeholder="Reaches adulthood at..."
+                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                                <input
+                                    type="text"
+                                    name="age.lifespan"
+                                    value={raceData.age.lifespan}
+                                    onChange={handleInputChange}
+                                    placeholder="Lives about..."
+                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Alignment</label>
                             <input
-                                type="number"
-                                id="speed"
-                                name="speed"
-                                className="form-control small-input"
-                                value={raceData.speed}
-                                onChange={handleInputChange}
-                                min="20"
-                                max="50"
-                                step="5"
-                            />
-                            <p className="form-help">30 feet is the standard walking speed for most races.</p>
-                        </div>
-
-                        <div className="form-field">
-                            <label htmlFor="alignment">Typical Alignment (Optional)</label>
-                            <textarea
-                                id="alignment"
+                                type="text"
                                 name="alignment"
-                                className="form-control"
                                 value={raceData.alignment}
                                 onChange={handleInputChange}
-                                rows={2}
-                                placeholder="Describe typical alignment tendencies of this race..."
+                                placeholder="e.g., Usually chaotic good"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             />
-                            <p className="form-help">This is for flavor - individual characters can be any alignment.</p>
                         </div>
 
-                        <div className="form-field">
-                            <label htmlFor="maturity">Age - Maturity</label>
+                        <div className="flex items-center space-x-2">
                             <input
-                                type="text"
-                                id="maturity"
-                                name="maturity"
-                                className="form-control"
-                                value={raceData.age.maturity}
-                                onChange={(e) => setRaceData(prev => ({
-                                    ...prev,
-                                    age: { ...prev.age, maturity: e.target.value }
-                                }))}
-                                placeholder="e.g., Reach adulthood at 20 years"
+                                type="checkbox"
+                                name="vision.darkvision"
+                                checked={raceData.vision.darkvision}
+                                onChange={handleInputChange}
+                                className="rounded border-gray-300"
                             />
+                            <label className="text-sm font-medium">Has Darkvision</label>
+                            {raceData.vision.darkvision && (
+                                <input
+                                    type="number"
+                                    name="vision.range"
+                                    value={raceData.vision.range}
+                                    onChange={handleInputChange}
+                                    min="30"
+                                    max="120"
+                                    step="30"
+                                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                            )}
+                            {raceData.vision.darkvision && <span className="text-sm text-gray-600">feet</span>}
                         </div>
-
-                        <div className="form-field">
-                            <label htmlFor="lifespan">Age - Lifespan</label>
-                            <input
-                                type="text"
-                                id="lifespan"
-                                name="lifespan"
-                                className="form-control"
-                                value={raceData.age.lifespan}
-                                onChange={(e) => setRaceData(prev => ({
-                                    ...prev,
-                                    age: { ...prev.age, lifespan: e.target.value }
-                                }))}
-                                placeholder="e.g., Live to be around 100 years old"
-                            />
-                        </div>
-
-                        <p className="form-note">* Required fields</p>
                     </div>
                 );
 
-            case 2: // Abilities & Traits
+            case 2: // Abilities
+                const abilities = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+                const abilityNames = {
+                    STR: 'Strength', DEX: 'Dexterity', CON: 'Constitution',
+                    INT: 'Intelligence', WIS: 'Wisdom', CHA: 'Charisma'
+                };
+                const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
+
                 return (
-                    <div className="form-group">
-                        <h3>Ability Score Increases</h3>
-                        <p className="form-info">
-                            Most races provide a total of +2 or +3 to ability scores. Select which abilities
-                            are increased for this race.
-                        </p>
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium mb-4">Ability Score Increases</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Most races get +2 to one ability and +1 to another (total: 3), or +1 to two abilities (total: 2).
+                            </p>
 
-                        {errors.abilityScoreIncreases && (
-                            <div className="error-message ability-error">{errors.abilityScoreIncreases}</div>
-                        )}
+                            {errors.abilityScoreIncreases && (
+                                <p className="text-red-500 text-sm mb-4">{errors.abilityScoreIncreases}</p>
+                            )}
 
-                        <div className="ability-increases">
-                            {Object.entries(raceData.abilityScoreIncreases).map(([ability, value]) => (
-                                <div key={ability} className="ability-item">
-                                    <label htmlFor={`ability-${ability}`}>{getAbilityName(ability)}</label>
-                                    <select
-                                        id={`ability-${ability}`}
-                                        className="form-control"
-                                        value={value}
-                                        onChange={(e) => handleAbilityChange(ability, e.target.value)}
-                                    >
-                                        <option value="0">+0</option>
-                                        <option value="1">+1</option>
-                                        <option value="2">+2</option>
-                                    </select>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="form-field vision-field">
-                            <h3>Vision</h3>
-                            <div className="checkbox-item">
-                                <input
-                                    type="checkbox"
-                                    id="darkvision"
-                                    name="darkvision"
-                                    checked={raceData.vision.darkvision}
-                                    onChange={handleVisionChange}
-                                />
-                                <label htmlFor="darkvision">Darkvision</label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {abilities.map(ability => (
+                                    <div key={ability} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                        <div>
+                                            <div className="font-medium">{ability}</div>
+                                            <div className="text-sm text-gray-500">{abilityNames[ability]}</div>
+                                        </div>
+                                        <select
+                                            value={raceData.abilityScoreIncreases[ability]}
+                                            onChange={(e) => handleAbilityChange(ability, e.target.value)}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                        >
+                                            <option value={0}>+0</option>
+                                            <option value={1}>+1</option>
+                                            <option value={2}>+2</option>
+                                            <option value={3}>+3</option>
+                                        </select>
+                                    </div>
+                                ))}
                             </div>
 
-                            {raceData.vision.darkvision && (
-                                <div className="vision-range">
-                                    <label htmlFor="vision-range">Range (feet):</label>
-                                    <select
-                                        id="vision-range"
-                                        name="range"
-                                        className="form-control small-input"
-                                        value={raceData.vision.range}
-                                        onChange={handleVisionChange}
-                                    >
-                                        <option value="30">30 ft.</option>
-                                        <option value="60">60 ft.</option>
-                                        <option value="90">90 ft.</option>
-                                        <option value="120">120 ft.</option>
-                                    </select>
+                            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm">
+                                    <strong>Total Ability Score Increases:</strong> +{totalASI}
+                                    {totalASI < 1 && <span className="text-red-500 ml-2">Too few points allocated</span>}
+                                    {totalASI > 3 && <span className="text-red-500 ml-2">Too many points allocated</span>}
+                                    {(totalASI >= 1 && totalASI <= 3) && <span className="text-green-500 ml-2">✓ Valid</span>}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 3: // Languages
+                const languages = [
+                    'Common', 'Dwarvish', 'Elvish', 'Giant', 'Gnomish', 'Goblin',
+                    'Halfling', 'Orc', 'Abyssal', 'Celestial', 'Draconic', 'Deep Speech',
+                    'Infernal', 'Primordial', 'Sylvan', 'Undercommon'
+                ];
+
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium mb-4">Languages</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Most races speak Common plus one or more additional languages.
+                            </p>
+
+                            {errors.languages && (
+                                <p className="text-red-500 text-sm mb-4">{errors.languages}</p>
+                            )}
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {languages.map(language => (
+                                    <label key={language} className="flex items-center space-x-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={raceData.languages.includes(language)}
+                                            onChange={(e) => handleLanguageChange(language, e.target.checked)}
+                                            className="rounded border-gray-300"
+                                        />
+                                        <span className={`text-sm ${raceData.languages.includes(language) ? 'font-medium text-blue-600' : ''}`}>
+                                            {language}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            {raceData.languages.length > 0 && (
+                                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                                    <p className="text-sm"><strong>Selected:</strong> {raceData.languages.join(', ')}</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 );
 
-            case 3: // Languages
+            case 4: // Traits
                 return (
-                    <div className="form-group">
-                        <h3>Languages</h3>
-                        <p className="form-info">
-                            Select which languages members of this race speak. Most races speak Common
-                            plus one or more additional languages.
-                        </p>
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium mb-4">Racial Traits</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Add unique abilities, resistances, or features that define this race.
+                            </p>
 
-                        {errors.languages && (
-                            <div className="error-message">{errors.languages}</div>
-                        )}
-
-                        <div className="languages-grid">
-                            {getLanguages().map(language => (
-                                <div key={language} className="language-item checkbox-item">
-                                    <input
-                                        type="checkbox"
-                                        id={`lang-${language}`}
-                                        checked={raceData.languages.includes(language)}
-                                        onChange={(e) => handleLanguageChange(language, e.target.checked)}
-                                    />
-                                    <label htmlFor={`lang-${language}`}>{language}</label>
-                                </div>
-                            ))}
+                            <RacialTraits raceData={raceData} updateRaceData={updateRaceData} />
                         </div>
-
-                        <div className="form-field">
-                            <label htmlFor="extraLanguages">Additional Language Options (Optional)</label>
-                            <textarea
-                                id="extraLanguages"
-                                name="extraLanguages"
-                                className="form-control"
-                                value={raceData.extraLanguages || ''}
-                                onChange={handleInputChange}
-                                rows={2}
-                                placeholder="e.g., You can speak, read, and write one extra language of your choice."
-                            />
-                        </div>
-                    </div>
-                );
-
-            case 4: // Racial Traits
-                return (
-                    <div className="form-group">
-                        <h3>Racial Traits</h3>
-                        <RacialTraits
-                            raceData={raceData}
-                            updateRaceData={updateRaceData}
-                        />
                     </div>
                 );
 
             case 5: // Subraces
                 return (
-                    <div className="form-group">
-                        <h3>Subraces (Optional)</h3>
-                        <Subraces
-                            raceData={raceData}
-                            updateRaceData={updateRaceData}
-                        />
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium mb-4">Subraces (Optional)</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Add subraces to provide variants of your main race. Each subrace can have
+                                additional ability score increases and traits.
+                            </p>
+
+                            <Subraces raceData={raceData} updateRaceData={updateRaceData} />
+                        </div>
                     </div>
                 );
 
             case 6: // Preview
                 return (
-                    <div className="preview-container">
-                        <div className="preview-header">
-                            <h3>Preview</h3>
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-medium">Race Preview</h3>
                             <button
-                                className="button"
                                 onClick={() => setShowExportModal(true)}
+                                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
                             >
                                 Export
                             </button>
                         </div>
 
-                        <div className="card race-preview">
-                            <RacePreview raceData={raceData} />
-                        </div>
+                        <RacePreview raceData={raceData} />
 
                         {showExportModal && (
                             <ExportModal
@@ -492,94 +459,84 @@ function RaceCreator({ onSave, onCancel }) {
         }
     };
 
-    // Helper function for ability names
-    function getAbilityName(ability) {
-        const abilities = {
-            'STR': 'Strength',
-            'DEX': 'Dexterity',
-            'CON': 'Constitution',
-            'INT': 'Intelligence',
-            'WIS': 'Wisdom',
-            'CHA': 'Charisma'
-        };
-        return abilities[ability] || ability;
-    }
-
-    // Helper function for languages
-    function getLanguages() {
-        return [
-            'Common',
-            'Dwarvish',
-            'Elvish',
-            'Giant',
-            'Gnomish',
-            'Goblin',
-            'Halfling',
-            'Orc',
-            'Abyssal',
-            'Celestial',
-            'Draconic',
-            'Deep Speech',
-            'Infernal',
-            'Primordial',
-            'Sylvan',
-            'Undercommon'
-        ];
-    }
-
     return (
-        <div className="form-container">
-            <h2>Create a Race</h2>
+        <div className="max-w-4xl mx-auto p-6">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {id ? 'Edit Race' : 'Create Race'}
+                </h1>
+                <p className="text-gray-600">Design a custom race with unique traits and abilities</p>
+            </div>
 
-            <div className="step-navigation">
-                {steps.map(step => (
-                    <button
-                        key={step.id}
-                        className={`step-button ${currentStep === step.id ? 'active' : ''}`}
-                        onClick={() => setCurrentStep(step.id)}
-                    >
-                        {step.name}
-                    </button>
+            {/* Step Navigation */}
+            <div className="flex items-center justify-between mb-8 overflow-x-auto">
+                {steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center min-w-0">
+                        <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
+                                    ? 'bg-blue-600 text-white'
+                                    : currentStep > step.id
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-gray-200 text-gray-600'
+                                }`}
+                        >
+                            {currentStep > step.id ? <Check size={16} /> : step.id}
+                        </div>
+                        <span className={`ml-2 text-sm whitespace-nowrap ${currentStep === step.id ? 'font-medium text-blue-600' : 'text-gray-600'}`}>
+                            {step.name}
+                        </span>
+                        {index < steps.length - 1 && (
+                            <div className="w-8 h-px bg-gray-300 mx-4 flex-shrink-0"></div>
+                        )}
+                    </div>
                 ))}
             </div>
 
-            <div className="step-content">
+            {/* Step Content */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 {renderStepContent()}
             </div>
 
-            <div className="form-actions">
-                {currentStep > 1 && (
-                    <button
-                        className="button button-secondary"
-                        onClick={prevStep}
-                    >
-                        Previous
-                    </button>
-                )}
-
-                {currentStep < steps.length ? (
-                    <button
-                        className="button"
-                        onClick={nextStep}
-                    >
-                        Next
-                    </button>
-                ) : (
-                    <button
-                        className="button"
-                        onClick={handleSave}
-                        disabled={!isStepValid(1) || !isStepValid(2) || !isStepValid(3)}
-                    >
-                        Save Race
-                    </button>
-                )}
-
+            {/* Navigation Buttons */}
+            <div className="flex justify-between">
                 <button
-                    className="button button-secondary"
-                    onClick={onCancel}
+                    onClick={prevStep}
+                    disabled={currentStep === 1}
+                    className={`flex items-center px-4 py-2 rounded-md ${currentStep === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                        }`}
                 >
-                    Cancel
+                    <ChevronLeft size={16} className="mr-1" />
+                    Previous
                 </button>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={onCancel || (() => navigate('/races'))}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    >
+                        Cancel
+                    </button>
+
+                    {currentStep < steps.length ? (
+                        <button
+                            onClick={nextStep}
+                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                            Next
+                            <ChevronRight size={16} className="ml-1" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                            <Check size={16} className="mr-1" />
+                            Save Race
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
