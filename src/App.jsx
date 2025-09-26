@@ -1,4 +1,4 @@
-// src/App.jsx - Updated with ClassCreator routing
+// src/App.jsx - FIXED with correct ClassCreator routing
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
@@ -18,6 +18,7 @@ import {
 import './App.css';
 import './styles/foundation.css';
 import './styles/dnd-components.css';
+import './styles/class-creator.css';
 
 // Import your existing pages
 import HomePage from './pages/HomePage';
@@ -84,57 +85,68 @@ function App() {
         {/* Sidebar */}
         <div
           className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            } ${darkMode ? 'bg-gray-800' : 'bg-white'} border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'
-            }`}
+            } ${darkMode ? 'bg-gray-800' : 'bg-white'} border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'} w-80`}
           style={{ width: '280px' }}
         >
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg"
                 style={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 }}
               >
-                <Scroll className="w-5 h-5 text-white" />
+                D
               </div>
-              <span className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                D&D Creator
-              </span>
+              <div>
+                <h2 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  D&D Creator
+                </h2>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Homebrew Tools v3.0
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+              className={`p-2 rounded-lg transition-colors ${darkMode
+                ? 'hover:bg-gray-700 text-gray-400'
+                : 'hover:bg-gray-100 text-gray-500'
                 }`}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <nav className="p-4 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode
-                    ? 'text-gray-300 hover:text-white hover:bg-gray-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+          {/* Navigation */}
+          <nav className="mt-6 px-3">
+            <div className="space-y-1">
+              {navigation.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${darkMode
+                      ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                  >
+                    <IconComponent className="w-5 h-5 mr-3" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
 
-          <div className="absolute bottom-4 left-4 right-4">
+          {/* Theme toggle */}
+          <div className="absolute bottom-6 left-3 right-3">
             <button
               onClick={toggleTheme}
-              className={`w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode
+              className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${darkMode
                 ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -198,6 +210,13 @@ function App() {
                 <Route path="/classes/create" element={<ClassCreator />} />
                 <Route path="/classes/:id/edit" element={<ClassCreator />} />
 
+                {/* NEW: Character Creator specific routes (these were missing!) */}
+                <Route path="/character-creator/class/new" element={<ClassCreator />} />
+                <Route path="/character-creator/class/:id/edit" element={<ClassCreator />} />
+                <Route path="/character-creator/subclass/new" element={<PlaceholderPage title="Subclass Creator (Coming Soon)" />} />
+                <Route path="/character/races/create" element={<PlaceholderPage title="Race Creator (Coming Soon)" />} />
+                <Route path="/character/backgrounds/create" element={<PlaceholderPage title="Background Creator (Coming Soon)" />} />
+
                 {/* Other content type routes (placeholder for now) */}
                 <Route path="/races" element={<PlaceholderPage title="Race Manager" />} />
                 <Route path="/backgrounds" element={<PlaceholderPage title="Background Manager" />} />
@@ -211,24 +230,34 @@ function App() {
           <footer
             className={`mt-12 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'
               }`}
-            style={{
-              backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.5)' : 'rgba(249, 250, 251, 0.5)'
-            }}
           >
             <div className="max-w-7xl mx-auto py-6 px-6">
-              <div
-                className="flex justify-between items-center"
-                style={{
-                  flexDirection: window.innerWidth >= 640 ? 'row' : 'column',
-                  gap: window.innerWidth >= 640 ? '0' : '0.5rem'
-                }}
-              >
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  © {new Date().getFullYear()} D&D Homebrew Creator
-                </p>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Made with ❤️ for the D&D community
-                </p>
+              <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  © 2024 D&D Homebrew Creator. Built for the community.
+                </div>
+                <div className="flex items-center space-x-6">
+                  <Link
+                    to="/about"
+                    className={`text-sm transition-colors ${darkMode
+                      ? 'text-gray-400 hover:text-gray-300'
+                      : 'text-gray-600 hover:text-gray-700'
+                      }`}
+                  >
+                    About
+                  </Link>
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-sm transition-colors ${darkMode
+                      ? 'text-gray-400 hover:text-gray-300'
+                      : 'text-gray-600 hover:text-gray-700'
+                      }`}
+                  >
+                    GitHub
+                  </a>
+                </div>
               </div>
             </div>
           </footer>
@@ -238,43 +267,55 @@ function App() {
   );
 }
 
-// Helper component for dynamic page title
+// Page title component
 function PageTitle({ darkMode }) {
   const location = useLocation();
 
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/') return 'Dashboard';
-    if (path === '/character-creator') return 'Character Creator';
-    if (path === '/classes') return 'Manage Classes';
-    if (path === '/classes/create') return 'Create New Class';
-    if (path.match(/\/classes\/[^/]+\/edit/)) return 'Edit Class';
-    if (path === '/races') return 'Manage Races';
-    if (path === '/backgrounds') return 'Manage Backgrounds';
-    if (path === '/about') return 'About';
-    return 'D&D Homebrew Creator';
+  const getTitleFromPath = (pathname) => {
+    switch (pathname) {
+      case '/':
+        return 'Home';
+      case '/character-creator':
+        return 'Character Creator';
+      case '/classes':
+        return 'Class Manager';
+      case '/classes/create':
+      case '/character-creator/class/new':
+        return 'Create Class';
+      case '/races':
+        return 'Race Manager';
+      case '/backgrounds':
+        return 'Background Manager';
+      case '/about':
+        return 'About';
+      default:
+        if (pathname.includes('/classes/') && pathname.includes('/edit')) {
+          return 'Edit Class';
+        }
+        return 'D&D Homebrew Creator';
+    }
   };
 
   return (
     <h1 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-      {getPageTitle()}
+      {getTitleFromPath(location.pathname)}
     </h1>
   );
 }
 
-// Placeholder page component
+// Placeholder component for unimplemented pages
 function PlaceholderPage({ title }) {
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+    <div className="max-w-4xl mx-auto text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
         <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg mx-auto mb-4 flex items-center justify-center">
-          <Scroll className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           {title}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          This section is coming soon! We're working on building amazing tools for managing your {title.toLowerCase()}.
+          We're working on building amazing tools for managing your {title.toLowerCase()}.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
