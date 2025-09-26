@@ -11,5 +11,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+  },
+  preview: {
+    allowedHosts: ['dandd-homebrew-creator.onrender.com'],
+    port: 4173, // default preview port, adjust if needed
   }
 })
