@@ -1,12 +1,12 @@
-// src/components/creators/character/steps/ProficienciesStep.jsx
+// src/components/creators/character/steps/ProficienciesStep.jsx - QUICK FIX
 import React from 'react';
-import { Input, Badge, Button } from '../../../ui';
+import { Input, Badge, Button, Card, CardContent } from '../../../ui';
 import {
     AbilityScoreSelector,
     SkillSelector,
     ProficiencySelector
 } from '../../../common/DndFormComponents';
-import { ABILITY_SCORES, SKILLS, ARMOR_TYPES, WEAPON_TYPES } from '../../../../utils/dndConstants';
+import { ABILITY_SCORES } from '../../../../utils/dndConstants';
 import { Shield, Sword, Wrench, Star } from 'lucide-react';
 
 export default function ProficienciesStep({
@@ -41,29 +41,8 @@ export default function ProficienciesStep({
         handleFieldChange('proficiencies', updatedProficiencies);
     };
 
-    const armorOptions = [
-        { value: 'light', label: 'Light armor', description: 'Leather, studded leather, padded' },
-        { value: 'medium', label: 'Medium armor', description: 'Hide, chain shirt, scale mail, breastplate, half plate' },
-        { value: 'heavy', label: 'Heavy armor', description: 'Ring mail, chain mail, splint, plate' },
-        { value: 'shields', label: 'Shields', description: 'All shields' }
-    ];
-
-    const weaponOptions = [
-        { value: 'simple', label: 'Simple weapons', description: 'Clubs, daggers, darts, javelins, etc.' },
-        { value: 'martial', label: 'Martial weapons', description: 'Longswords, battleaxes, longbows, etc.' },
-        { value: 'specific', label: 'Specific weapons only', description: 'Choose individual weapons below' }
-    ];
-
     return (
         <div className="space-y-6">
-            {/* Introduction */}
-            <div className="form-section">
-                <h4 className="form-section-title">Class Proficiencies</h4>
-                <p className="form-section-description">
-                    Define what your class is naturally trained in. These represent years of focused study and practice.
-                </p>
-            </div>
-
             {/* Saving Throws */}
             <div className="form-section">
                 <h4 className="form-section-title flex items-center gap-2">
@@ -71,7 +50,7 @@ export default function ProficienciesStep({
                     Saving Throw Proficiencies
                 </h4>
                 <p className="form-section-description">
-                    Choose exactly 2 ability scores for saving throw proficiency. These represent the class's natural resistances.
+                    Choose exactly 2 ability scores for saving throw proficiency.
                 </p>
 
                 <AbilityScoreSelector
@@ -85,16 +64,6 @@ export default function ProficienciesStep({
                     error={touched.savingThrows && errors.savingThrows}
                     helperText="Every class gets exactly 2 saving throw proficiencies"
                 />
-
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h6 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Common Combinations:</h6>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 text-sm text-blue-800 dark:text-blue-200">
-                        <div><strong>Fighters:</strong> Strength + Constitution</div>
-                        <div><strong>Wizards:</strong> Intelligence + Wisdom</div>
-                        <div><strong>Rogues:</strong> Dexterity + Intelligence</div>
-                        <div><strong>Clerics:</strong> Wisdom + Charisma</div>
-                    </div>
-                </div>
             </div>
 
             {/* Skill Proficiencies */}
@@ -125,7 +94,6 @@ export default function ProficienciesStep({
                             >
                                 <option value="from_list">Choose from class list</option>
                                 <option value="any">Choose any skills</option>
-                                <option value="ability_based">Any skills from specific abilities</option>
                             </select>
                         </div>
                     </div>
@@ -136,20 +104,8 @@ export default function ProficienciesStep({
                             <SkillSelector
                                 value={classData.skillChoices?.from || []}
                                 onChange={(skills) => handleSkillChoicesChange('from', skills)}
-                                multiple={true}
+                                groupByAbility={true}
                                 helperText="Select which skills characters can choose from"
-                            />
-                        </div>
-                    )}
-
-                    {classData.skillChoices?.type === 'ability_based' && (
-                        <div className="form-field">
-                            <label className="form-label">Allowed Abilities</label>
-                            <AbilityScoreSelector
-                                value={classData.skillChoices?.abilities || []}
-                                onChange={(abilities) => handleSkillChoicesChange('abilities', abilities)}
-                                multiple={true}
-                                helperText="Characters can choose skills from these ability scores"
                             />
                         </div>
                     )}
@@ -166,36 +122,14 @@ export default function ProficienciesStep({
                     What armor can this class wear effectively?
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {armorOptions.map((option) => (
-                        <label key={option.value} className="armor-option">
-                            <input
-                                type="checkbox"
-                                checked={proficiencies.armor?.includes(option.value)}
-                                onChange={(e) => {
-                                    const current = proficiencies.armor || [];
-                                    const updated = e.target.checked
-                                        ? [...current, option.value]
-                                        : current.filter(item => item !== option.value);
-                                    updateProficiencies('armor', updated);
-                                }}
-                                className="sr-only"
-                            />
-                            <div className={`
-                                p-4 border-2 rounded-lg cursor-pointer transition-all duration-200
-                                ${proficiencies.armor?.includes(option.value)
-                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                                }
-                            `}>
-                                <div className="font-medium">{option.label}</div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    {option.description}
-                                </div>
-                            </div>
-                        </label>
-                    ))}
-                </div>
+                <ProficiencySelector
+                    label="Armor Proficiencies"
+                    type="armor"
+                    value={proficiencies.armor || []}
+                    onChange={(value) => updateProficiencies('armor', value)}
+                    allowCustom={true}
+                    helperText="Light armor for agile classes, heavy armor for tanks"
+                />
             </div>
 
             {/* Weapon Proficiencies */}
@@ -208,50 +142,14 @@ export default function ProficienciesStep({
                     What weapons can this class use effectively?
                 </p>
 
-                <div className="space-y-4">
-                    {/* Basic weapon categories */}
-                    <div className="space-y-3">
-                        {weaponOptions.map((option) => (
-                            <label key={option.value} className="weapon-option">
-                                <input
-                                    type="radio"
-                                    name="weaponProficiencyType"
-                                    value={option.value}
-                                    checked={classData.weaponProficiencyType === option.value}
-                                    onChange={(e) => handleFieldChange('weaponProficiencyType', e.target.value)}
-                                    className="sr-only"
-                                />
-                                <div className={`
-                                    p-4 border-2 rounded-lg cursor-pointer transition-all duration-200
-                                    ${classData.weaponProficiencyType === option.value
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                                    }
-                                `}>
-                                    <div className="font-medium">{option.label}</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                        {option.description}
-                                    </div>
-                                </div>
-                            </label>
-                        ))}
-                    </div>
-
-                    {/* Specific weapons list for 'specific' type */}
-                    {classData.weaponProficiencyType === 'specific' && (
-                        <div className="form-field">
-                            <label className="form-label">Specific Weapons</label>
-                            <div className="specific-weapons">
-                                <Input
-                                    placeholder="e.g., longswords, shortbows, rapiers"
-                                    value={proficiencies.specificWeapons || ''}
-                                    onChange={(e) => updateProficiencies('specificWeapons', e.target.value)}
-                                    helperText="List specific weapons, separated by commas"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <ProficiencySelector
+                    label="Weapon Proficiencies"
+                    type="weapons"
+                    value={proficiencies.weapons || []}
+                    onChange={(value) => updateProficiencies('weapons', value)}
+                    allowCustom={true}
+                    helperText="Simple weapons for most classes, martial weapons for warriors"
+                />
             </div>
 
             {/* Tool Proficiencies */}
@@ -261,51 +159,17 @@ export default function ProficienciesStep({
                     Tool Proficiencies
                 </h4>
                 <p className="form-section-description">
-                    What tools, instruments, or kits does this class know how to use?
+                    Optional tool proficiencies that reflect the class's background or training.
                 </p>
 
-                <div className="space-y-4">
-                    <Input
-                        label="Tool Proficiencies"
-                        value={proficiencies.tools?.join(', ') || ''}
-                        onChange={(e) => {
-                            const tools = e.target.value.split(',').map(tool => tool.trim()).filter(Boolean);
-                            updateProficiencies('tools', tools);
-                        }}
-                        placeholder="e.g., thieves' tools, herbalism kit, smith's tools"
-                        helperText="List tools separated by commas (leave empty if none)"
-                    />
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <strong>Common Examples:</strong>
-                            <ul className="mt-1 space-y-1 text-gray-600">
-                                <li>• Thieves' tools</li>
-                                <li>• Herbalism kit</li>
-                                <li>• Smith's tools</li>
-                                <li>• Musical instrument</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <strong>Artisan Tools:</strong>
-                            <ul className="mt-1 space-y-1 text-gray-600">
-                                <li>• Alchemist's supplies</li>
-                                <li>• Carpenter's tools</li>
-                                <li>• Leatherworker's tools</li>
-                                <li>• Mason's tools</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <strong>Other Kits:</strong>
-                            <ul className="mt-1 space-y-1 text-gray-600">
-                                <li>• Disguise kit</li>
-                                <li>• Forgery kit</li>
-                                <li>• Navigator's tools</li>
-                                <li>• Poisoner's kit</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <ProficiencySelector
+                    label="Tool Proficiencies"
+                    type="tools"
+                    value={proficiencies.tools || []}
+                    onChange={(value) => updateProficiencies('tools', value)}
+                    allowCustom={true}
+                    helperText="Leave empty if the class doesn't get tool proficiencies"
+                />
             </div>
 
             {/* Language Proficiencies */}
@@ -335,20 +199,9 @@ export default function ProficienciesStep({
                         >
                             <option value="any">Any languages</option>
                             <option value="specific">Specific languages</option>
-                            <option value="choice">Choice from a list</option>
                         </select>
                     </div>
                 </div>
-
-                {classData.languageType === 'specific' && (
-                    <Input
-                        label="Specific Languages"
-                        value={classData.specificLanguages || ''}
-                        onChange={(e) => handleFieldChange('specificLanguages', e.target.value)}
-                        placeholder="e.g., Draconic, Celestial, Abyssal"
-                        helperText="Languages automatically granted, separated by commas"
-                    />
-                )}
             </div>
 
             {/* Summary */}
@@ -362,9 +215,7 @@ export default function ProficienciesStep({
                         <strong>Skills:</strong> Choose {classData.skillChoices?.choose || 2}
                         {classData.skillChoices?.type === 'from_list' && classData.skillChoices?.from?.length > 0
                             ? ` from ${classData.skillChoices.from.join(', ')}`
-                            : classData.skillChoices?.type === 'any'
-                                ? ' from any skills'
-                                : ' skills'
+                            : ' skills'
                         }
                     </div>
                     <div>
@@ -374,19 +225,20 @@ export default function ProficienciesStep({
                         }
                     </div>
                     <div>
-                        <strong>Weapons:</strong> {
-                            classData.weaponProficiencyType === 'simple' ? 'Simple weapons' :
-                                classData.weaponProficiencyType === 'martial' ? 'Simple and martial weapons' :
-                                    classData.weaponProficiencyType === 'specific' ? proficiencies.specificWeapons || 'None specified' :
-                                        'None selected'
+                        <strong>Weapons:</strong> {proficiencies.weapons?.length > 0
+                            ? proficiencies.weapons.join(', ')
+                            : 'None'
                         }
                     </div>
                     <div>
-                        <strong>Tools:</strong> {proficiencies.tools?.join(', ') || 'None'}
+                        <strong>Tools:</strong> {proficiencies.tools?.length > 0
+                            ? proficiencies.tools.join(', ')
+                            : 'None'
+                        }
                     </div>
                     <div>
                         <strong>Languages:</strong> {proficiencies.languages > 0
-                            ? `${proficiencies.languages} additional language${proficiencies.languages > 1 ? 's' : ''}`
+                            ? `${proficiencies.languages} additional`
                             : 'None'
                         }
                     </div>

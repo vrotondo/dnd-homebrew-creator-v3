@@ -1,41 +1,34 @@
-// ============================================================================
-// src/components/layout/PageHeader.jsx
-// ============================================================================
-
+// src/components/layout/PageHeader.jsx - Simple PageHeader component
 import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { navigationHelpers } from '../../utils/routes';
-import { Breadcrumbs } from '../common/Breadcrumbs';
 
 export const PageHeader = ({
     title,
     subtitle,
-    actions,
-    showBreadcrumbs = true,
-    contentData = {}
+    actionButton,
+    children
 }) => {
-    const location = useLocation();
-
-    const pageTitle = title || navigationHelpers.getPageTitle(location.pathname, contentData);
-
     return (
-        <div className="page-header">
-            {showBreadcrumbs && <Breadcrumbs contentData={contentData} />}
-
-            <div className="page-header-content">
-                <div className="page-header-text">
-                    <h1 className="page-title">{pageTitle}</h1>
+        <div className="page-header mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {title}
+                    </h1>
                     {subtitle && (
-                        <p className="page-subtitle">{subtitle}</p>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">
+                            {subtitle}
+                        </p>
                     )}
                 </div>
 
-                {actions && (
-                    <div className="page-header-actions">
-                        {actions}
+                {actionButton && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        {actionButton}
                     </div>
                 )}
             </div>
+
+            {children}
         </div>
     );
 };

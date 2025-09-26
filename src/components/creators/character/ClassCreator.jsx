@@ -22,9 +22,41 @@ import { ConfirmDialog } from '../../common/ConfirmDialog';
 
 // Import hooks and utilities
 import { useClasses } from '../../../hooks/useStorage';
-import { validateCharacterClass, validateField } from '../../../utils/validation';
 import { CharacterClass } from '../../../utils/dataModels';
 import { ABILITY_SCORES, HIT_DICE, dndUtils } from '../../../utils/dndConstants';
+
+// Simple validation function
+const validateCharacterClass = (classData) => {
+    const errors = {};
+    let isValid = true;
+
+    if (!classData.name || classData.name.trim() === '') {
+        errors.name = 'Class name is required';
+        isValid = false;
+    }
+
+    if (!classData.description || classData.description.trim() === '') {
+        errors.description = 'Class description is required';
+        isValid = false;
+    }
+
+    if (!classData.hitDie) {
+        errors.hitDie = 'Hit die is required';
+        isValid = false;
+    }
+
+    if (!classData.primaryAbility || !Array.isArray(classData.primaryAbility) || classData.primaryAbility.length === 0) {
+        errors.primaryAbility = 'At least one primary ability is required';
+        isValid = false;
+    }
+
+    if (!classData.savingThrows || !Array.isArray(classData.savingThrows) || classData.savingThrows.length !== 2) {
+        errors.savingThrows = 'Exactly 2 saving throw proficiencies are required';
+        isValid = false;
+    }
+
+    return { isValid, errors };
+};
 
 // Import step components
 import BasicInfoStep from './steps/BasicInfoStep';
@@ -181,9 +213,22 @@ export default function ClassCreator() {
         updateClassData({ [field]: value });
         setTouched(prev => ({ ...prev, [field]: true }));
 
-        // Real-time validation
+        // Real-time validation - simplified for now
         if (touched[field]) {
-            const error = validateField(field, value, classData);
+            // Simple field-level validation
+            let error = null;
+            if (field === 'name' && (!value || value.trim() === '')) {
+                error = 'Class name is required';
+            } else if (field === 'description' && (!value || value.trim() === '')) {
+                error = 'Class description is required';
+            } else if (field === 'hitDie' && !value) {
+                error = 'Hit die is required';
+            } else if (field === 'primaryAbility' && (!value || !Array.isArray(value) || value.length === 0)) {
+                error = 'At least one primary ability is required';
+            } else if (field === 'savingThrows' && (!value || !Array.isArray(value) || value.length !== 2)) {
+                error = 'Exactly 2 saving throw proficiencies are required';
+            }
+
             setErrors(prev => ({
                 ...prev,
                 [field]: error

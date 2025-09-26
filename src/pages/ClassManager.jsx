@@ -1,4 +1,4 @@
-// src/pages/ClassManager.jsx - Updated to include subclasses
+// src/pages/ClassManager.jsx - Updated with correct routes for new ClassCreator
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -40,6 +40,35 @@ function ClassManager() {
         } else {
             loadSubclasses();
         }
+    };
+
+    // Apply filters and search
+    const applyFilters = (items, search, filters, type) => {
+        let filtered = items;
+
+        // Apply search filter
+        if (search) {
+            filtered = filtered.filter(item =>
+                item.name.toLowerCase().includes(search.toLowerCase()) ||
+                (item.description && item.description.toLowerCase().includes(search.toLowerCase()))
+            );
+        }
+
+        // Apply type-specific filters
+        if (type === 'classes') {
+            if (filters.hitDice && filters.hitDice.length > 0) {
+                filtered = filtered.filter(item => filters.hitDice.includes(item.hitDice));
+            }
+            if (filters.primaryAbility && filters.primaryAbility.length > 0) {
+                filtered = filtered.filter(item => filters.primaryAbility.includes(item.primaryAbility));
+            }
+        } else if (type === 'subclasses') {
+            if (filters.parentClass && filters.parentClass.length > 0) {
+                filtered = filtered.filter(item => filters.parentClass.includes(item.parentClass));
+            }
+        }
+
+        setFilteredItems(filtered);
     };
 
     // Load classes
@@ -92,61 +121,26 @@ function ClassManager() {
         }));
     };
 
-    // Apply filters and search
-    const applyFilters = (items, search, filters, type) => {
-        let result = [...items];
-
-        // Apply search term
-        if (search) {
-            const searchLower = search.toLowerCase();
-            result = result.filter(item =>
-                item.name.toLowerCase().includes(searchLower) ||
-                item.description.toLowerCase().includes(searchLower)
-            );
-        }
-
-        if (type === 'classes') {
-            // Apply hit dice filter
-            if (filters.hitDice && filters.hitDice.length > 0) {
-                result = result.filter(cls => filters.hitDice.includes(cls.hitDice));
-            }
-
-            // Apply primary ability filter
-            if (filters.primaryAbility && filters.primaryAbility.length > 0) {
-                result = result.filter(cls => filters.primaryAbility.includes(cls.primaryAbility));
-            }
-        } else if (type === 'subclasses') {
-            // Apply parent class filter
-            if (filters.parentClass && filters.parentClass.length > 0) {
-                result = result.filter(sub => filters.parentClass.includes(sub.parentClass));
-            }
-        }
-
-        setFilteredItems(result);
-    };
-
-    // Handle search input
+    // Handle search
     const handleSearch = (e) => {
-        const value = e.target.value;
-        setSearchTerm(value);
+        const term = e.target.value;
+        setSearchTerm(term);
         applyFilters(
             activeTab === 'classes' ? classes : subclasses,
-            value,
-            filterOptions[activeTab],
+            term,
+            activeTab === 'classes' ? filterOptions.classes : filterOptions.subclasses,
             activeTab
         );
     };
 
     // Handle filter changes
-    const handleFilterChange = (type, value, checked) => {
+    const handleFilterChange = (filterType, value, checked) => {
         const updatedFilters = { ...filterOptions[activeTab] };
 
         if (checked) {
-            if (!updatedFilters[type].includes(value)) {
-                updatedFilters[type] = [...updatedFilters[type], value];
-            }
+            updatedFilters[filterType] = [...updatedFilters[filterType], value];
         } else {
-            updatedFilters[type] = updatedFilters[type].filter(v => v !== value);
+            updatedFilters[filterType] = updatedFilters[filterType].filter(v => v !== value);
         }
 
         setFilterOptions(prev => ({
@@ -209,8 +203,10 @@ function ClassManager() {
     // Handle item actions
     const handleEdit = (item) => {
         if (activeTab === 'classes') {
-            navigate(`/character-creator/class/${item.id}`);
+            // Updated to use new route structure
+            navigate(`/classes/${item.id}/edit`);
         } else {
+            // Keep subclass routing as-is for now (can be updated later)
             navigate(`/character-creator/subclass/${item.id}`);
         }
     };
@@ -277,8 +273,10 @@ function ClassManager() {
                 <h1>Manage Content</h1>
                 <div className="header-actions">
                     {activeTab === 'classes' ? (
-                        <Link to="/character-creator/class/new" className="button">Create New Class</Link>
+                        // Updated to use new route structure
+                        <Link to="/classes/create" className="button">Create New Class</Link>
                     ) : (
+                        // Keep subclass routing as-is for now (can be updated later)
                         <Link to="/character-creator/subclass/new" className="button">Create New Subclass</Link>
                     )}
                 </div>
@@ -299,48 +297,53 @@ function ClassManager() {
                 </button>
             </div>
 
-            <div className="manager-container">
-                {/* Filters Panel */}
-                <div className="filters-panel">
-                    <div className="search-container">
+            <div className="content-manager">
+                {/* Search and Sort Controls */}
+                <div className="controls">
+                    <div className="search-controls">
                         <input
                             type="text"
                             placeholder={`Search ${activeTab}...`}
                             value={searchTerm}
                             onChange={handleSearch}
-                            className="form-control search-input"
+                            className="search-input"
                         />
-                        {searchTerm && (
-                            <button
-                                className="search-clear"
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    applyFilters(
-                                        activeTab === 'classes' ? classes : subclasses,
-                                        '',
-                                        filterOptions[activeTab],
-                                        activeTab
-                                    );
-                                }}
-                            >
-                                ×
-                            </button>
-                        )}
                     </div>
 
+                    <div className="sort-controls">
+                        <label>Sort by:</label>
+                        <select
+                            value={`${sortBy.field}-${sortBy.direction}`}
+                            onChange={(e) => {
+                                const [field, direction] = e.target.value.split('-');
+                                handleSort(field);
+                            }}
+                        >
+                            <option value="updatedAt-desc">Recently Updated</option>
+                            <option value="updatedAt-asc">Oldest First</option>
+                            <option value="name-asc">Name A-Z</option>
+                            <option value="name-desc">Name Z-A</option>
+                            <option value="createdAt-desc">Recently Created</option>
+                            <option value="createdAt-asc">Oldest Created</option>
+                        </select>
+                    </div>
+                </div>
+
+                {/* Filters */}
+                <div className="filters">
                     {activeTab === 'classes' ? (
                         <>
                             <div className="filter-group">
-                                <h3>Hit Dice</h3>
+                                <h3>Hit Die</h3>
                                 {filterOptions.classes.hitDiceOptions?.map(hitDie => (
                                     <div className="filter-option" key={hitDie}>
                                         <input
                                             type="checkbox"
-                                            id={`hit-dice-${hitDie}`}
+                                            id={`hitdie-${hitDie}`}
                                             checked={filterOptions.classes.hitDice.includes(hitDie)}
                                             onChange={(e) => handleFilterChange('hitDice', hitDie, e.target.checked)}
                                         />
-                                        <label htmlFor={`hit-dice-${hitDie}`}>{hitDie}</label>
+                                        <label htmlFor={`hitdie-${hitDie}`}>{hitDie}</label>
                                     </div>
                                 ))}
                             </div>
@@ -399,47 +402,36 @@ function ClassManager() {
                             <span>
                                 {filteredItems.length} {filteredItems.length === 1 ?
                                     (activeTab === 'classes' ? 'class' : 'subclass') :
-                                    (activeTab === 'classes' ? 'classes' : 'subclasses')} found
+                                    (activeTab === 'classes' ? 'classes' : 'subclasses')}
                             </span>
-                        </div>
-
-                        <div className="sort-controls">
-                            <span>Sort by:</span>
-                            <button
-                                className={`sort-button ${sortBy.field === 'name' ? `sorted-${sortBy.direction}` : ''}`}
-                                onClick={() => handleSort('name')}
-                            >
-                                Name
-                            </button>
-                            <button
-                                className={`sort-button ${sortBy.field === 'updatedAt' ? `sorted-${sortBy.direction}` : ''}`}
-                                onClick={() => handleSort('updatedAt')}
-                            >
-                                Last Updated
-                            </button>
                         </div>
                     </div>
 
                     {filteredItems.length === 0 ? (
                         <div className="empty-state">
-                            <p>No {activeTab} found matching your criteria.</p>
-                            {(searchTerm ||
-                                (activeTab === 'classes' &&
-                                    (filterOptions.classes.hitDice.length > 0 ||
-                                        filterOptions.classes.primaryAbility.length > 0)) ||
-                                (activeTab === 'subclasses' &&
-                                    filterOptions.subclasses.parentClass.length > 0)) && (
-                                    <button className="button button-secondary" onClick={clearFilters}>
-                                        Clear Filters
-                                    </button>
-                                )}
+                            <h3>No {activeTab} found</h3>
+                            <p>
+                                {searchTerm || filterOptions[activeTab].hitDice?.length > 0 || filterOptions[activeTab].primaryAbility?.length > 0 || filterOptions[activeTab].parentClass?.length > 0
+                                    ? 'Try adjusting your search or filters.'
+                                    : `You haven't created any ${activeTab} yet.`
+                                }
+                            </p>
+                            {activeTab === 'classes' ? (
+                                <Link to="/classes/create" className="button">
+                                    Create Your First Class
+                                </Link>
+                            ) : (
+                                <Link to="/character-creator/subclass/new" className="button">
+                                    Create Your First Subclass
+                                </Link>
+                            )}
                         </div>
                     ) : (
-                        <div className="content-cards">
+                        <div className="items-grid">
                             {filteredItems.map(item => (
-                                <div className="content-card" key={item.id}>
+                                <div className="item-card" key={item.id}>
                                     <div className="card-header">
-                                        <h3>{item.name}</h3>
+                                        <h3 className="card-title">{item.name}</h3>
                                         <div className="card-badges">
                                             {activeTab === 'classes' ? (
                                                 <>

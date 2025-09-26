@@ -1,19 +1,7 @@
-// src/components/common/DndFormComponents.jsx - Specialized D&D Form Components
-
+// src/components/common/DndFormComponents.jsx - Complete D&D Form Components
 import React, { useState } from 'react';
 import { Input, Button, Badge } from '../ui';
-import {
-    ABILITY_SCORES,
-    SKILLS,
-    SKILL_NAMES,
-    ALL_LANGUAGES,
-    ALL_TOOLS,
-    ARMOR_TYPES,
-    WEAPON_CATEGORIES,
-    SIZES,
-    HIT_DICE,
-    dndUtils
-} from '../../utils/dndConstants';
+import { ABILITY_SCORES, SKILLS, SKILL_NAMES } from '../../utils/dndConstants';
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ===================
@@ -26,6 +14,7 @@ export const AbilityScoreSelector = ({
     onChange,
     multiple = true,
     max = null,
+    min = null,
     required = false,
     error = null,
     helperText = null
@@ -124,15 +113,16 @@ export const SkillSelector = ({
     };
 
     const renderSkillsByAbility = () => {
-        const skillsByAbility = ABILITY_SCORES.reduce((acc, ability) => {
-            acc[ability] = SKILLS.filter(skill => skill.ability === ability);
-            return acc;
+        const skillsByAbility = SKILLS.reduce((groups, skill) => {
+            if (!groups[skill.ability]) {
+                groups[skill.ability] = [];
+            }
+            groups[skill.ability].push(skill);
+            return groups;
         }, {});
 
-        return ABILITY_SCORES.map(ability => {
-            const skills = skillsByAbility[ability];
-            const isExpanded = expandedGroups[ability];
-            const selectedInGroup = skills.filter(skill => value.includes(skill.name)).length;
+        return Object.entries(skillsByAbility).map(([ability, skills]) => {
+            const isExpanded = expandedGroups[ability] !== false; // Default to expanded
 
             return (
                 <div key={ability} className="skill-group">
@@ -141,15 +131,12 @@ export const SkillSelector = ({
                         className="skill-group-header"
                         onClick={() => toggleGroup(ability)}
                     >
-                        <div className="skill-group-info">
-                            <span className="skill-group-name">{ability}</span>
-                            {selectedInGroup > 0 && (
-                                <Badge variant="primary" size="sm">
-                                    {selectedInGroup}
-                                </Badge>
-                            )}
-                        </div>
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        <span className="skill-group-title">{ability}</span>
+                        {isExpanded ? (
+                            <ChevronUp className="w-4 h-4" />
+                        ) : (
+                            <ChevronDown className="w-4 h-4" />
+                        )}
                     </button>
 
                     {isExpanded && (
@@ -161,7 +148,7 @@ export const SkillSelector = ({
                                 return (
                                     <label
                                         key={skill.name}
-                                        className={`skill-option ${isDisabled ? 'disabled' : ''}`}
+                                        className={`skill-option ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
                                     >
                                         <input
                                             type="checkbox"
@@ -182,22 +169,23 @@ export const SkillSelector = ({
 
     const renderSkillsList = () => {
         return (
-            <div className="skills-list">
-                {SKILL_NAMES.map(skill => {
-                    const isSelected = value.includes(skill);
+            <div className="skills-grid">
+                {SKILL_NAMES.map(skillName => {
+                    const isSelected = value.includes(skillName);
                     const isDisabled = max && value.length >= max && !isSelected;
-                    const skillInfo = SKILLS.find(s => s.name === skill);
 
                     return (
-                        <label key={skill} className={`skill-option ${isDisabled ? 'disabled' : ''}`}>
+                        <label
+                            key={skillName}
+                            className={`skill-option ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                        >
                             <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={() => !isDisabled && handleToggle(skill)}
+                                onChange={() => !isDisabled && handleToggle(skillName)}
                                 disabled={isDisabled}
                             />
-                            <span className="skill-name">{skill}</span>
-                            <span className="skill-ability">({skillInfo.ability.substring(0, 3)})</span>
+                            <span className="skill-name">{skillName}</span>
                         </label>
                     );
                 })}
@@ -238,6 +226,62 @@ export const SkillSelector = ({
 };
 
 // ===================
+// HIT DIE SELECTOR
+// ===================
+
+export const HitDieSelector = ({
+    label = "Hit Die",
+    value,
+    onChange,
+    required = false,
+    error = null,
+    helperText = null
+}) => {
+    const hitDiceOptions = [
+        { value: 6, label: 'd6', description: 'Weak (Wizard-like)', avgHP: '3.5' },
+        { value: 8, label: 'd8', description: 'Moderate (Rogue-like)', avgHP: '4.5' },
+        { value: 10, label: 'd10', description: 'Strong (Fighter-like)', avgHP: '5.5' },
+        { value: 12, label: 'd12', description: 'Very Strong (Barbarian-like)', avgHP: '6.5' }
+    ];
+
+    return (
+        <div className="form-field">
+            <label className="form-label">
+                {label}
+                {required && <span className="form-required">*</span>}
+            </label>
+
+            <div className="hit-die-grid">
+                {hitDiceOptions.map(option => (
+                    <button
+                        key={option.value}
+                        type="button"
+                        className={`hit-die-option ${value === option.value ? 'selected' : ''}`}
+                        onClick={() => onChange(option.value)}
+                    >
+                        <div className="hit-die-label">{option.label}</div>
+                        <div className="hit-die-description">{option.description}</div>
+                        <div className="hit-die-avg">Avg: {option.avgHP} HP/level</div>
+                    </button>
+                ))}
+            </div>
+
+            {error && (
+                <div className="form-error">
+                    {error}
+                </div>
+            )}
+
+            {helperText && !error && (
+                <div className="form-helper">
+                    {helperText}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ===================
 // PROFICIENCY SELECTOR
 // ===================
 
@@ -256,14 +300,14 @@ export const ProficiencySelector = ({
 
     const getOptions = () => {
         switch (type) {
-            case 'languages':
-                return ALL_LANGUAGES;
-            case 'tools':
-                return ALL_TOOLS;
             case 'armor':
-                return ARMOR_TYPES;
+                return ['Light armor', 'Medium armor', 'Heavy armor', 'Shields'];
             case 'weapons':
-                return WEAPON_CATEGORIES;
+                return ['Simple weapons', 'Martial weapons'];
+            case 'tools':
+                return ['Thieves\' tools', 'Artisan\'s tools', 'Musical instruments', 'Gaming sets'];
+            case 'languages':
+                return ['Dwarvish', 'Elvish', 'Giant', 'Gnomish', 'Goblin', 'Halfling', 'Orc', 'Abyssal', 'Celestial', 'Draconic'];
             default:
                 return [];
         }
@@ -290,8 +334,8 @@ export const ProficiencySelector = ({
         }
     };
 
-    const handleRemove = (item) => {
-        onChange(value.filter(v => v !== item));
+    const handleRemove = (option) => {
+        onChange(value.filter(v => v !== option));
     };
 
     return (
@@ -301,20 +345,16 @@ export const ProficiencySelector = ({
                 {required && <span className="form-required">*</span>}
             </label>
 
-            {/* Selected items */}
+            {/* Display selected values */}
             {value.length > 0 && (
                 <div className="selected-proficiencies">
-                    {value.map(item => (
-                        <Badge
-                            key={item}
-                            variant="outline"
-                            className="selected-proficiency"
-                        >
-                            {item}
+                    {value.map(prof => (
+                        <Badge key={prof} variant="secondary" className="proficiency-badge">
+                            {prof}
                             <button
                                 type="button"
-                                onClick={() => handleRemove(item)}
-                                className="remove-proficiency"
+                                onClick={() => handleRemove(prof)}
+                                className="badge-remove"
                             >
                                 <X className="w-3 h-3" />
                             </button>
@@ -323,45 +363,47 @@ export const ProficiencySelector = ({
                 </div>
             )}
 
-            {/* Options */}
-            <div className="proficiency-options">
-                {options.map(option => {
-                    const isSelected = value.includes(option);
-                    const isDisabled = max && value.length >= max && !isSelected;
+            {/* Standard options */}
+            {options.length > 0 && (
+                <div className="proficiency-options">
+                    <div className="proficiency-grid">
+                        {options.map(option => {
+                            const isSelected = value.includes(option);
+                            const isDisabled = max && value.length >= max && !isSelected;
 
-                    return (
-                        <label key={option} className={`proficiency-option ${isDisabled ? 'disabled' : ''}`}>
-                            <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => !isDisabled && handleToggle(option)}
-                                disabled={isDisabled}
-                            />
-                            <span>{option}</span>
-                        </label>
-                    );
-                })}
-            </div>
+                            return (
+                                <button
+                                    key={option}
+                                    type="button"
+                                    className={`proficiency-option ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                    onClick={() => !isDisabled && handleToggle(option)}
+                                    disabled={isDisabled}
+                                >
+                                    {option}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Custom input */}
             {allowCustom && (
                 <div className="custom-proficiency-input">
                     <div className="flex gap-2">
                         <Input
-                            type="text"
-                            placeholder={`Custom ${type.slice(0, -1)}...`}
+                            placeholder={`Add custom ${type.slice(0, -1)}...`}
                             value={customInput}
                             onChange={(e) => setCustomInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustom())}
+                            onKeyPress={(e) => e.key === 'Enter' && handleAddCustom()}
                         />
                         <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
                             onClick={handleAddCustom}
                             disabled={!customInput.trim() || (max && value.length >= max)}
+                            size="sm"
                         >
-                            <Plus className="w-4 h-4" />
+                            Add
                         </Button>
                     </div>
                 </div>
@@ -372,251 +414,6 @@ export const ProficiencySelector = ({
                     {value.length}/{max} selected
                 </div>
             )}
-
-            {error && (
-                <div className="form-error">
-                    {error}
-                </div>
-            )}
-
-            {helperText && !error && (
-                <div className="form-helper">
-                    {helperText}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// ===================
-// HIT DIE SELECTOR
-// ===================
-
-export const HitDieSelector = ({
-    label = "Hit Die",
-    value,
-    onChange,
-    required = false,
-    error = null,
-    helperText = null
-}) => {
-    return (
-        <div className="form-field">
-            <label className="form-label">
-                {label}
-                {required && <span className="form-required">*</span>}
-            </label>
-
-            <div className="hit-die-options">
-                {HIT_DICE.map(die => (
-                    <label key={die.value} className="hit-die-option">
-                        <input
-                            type="radio"
-                            name="hitDie"
-                            value={die.value}
-                            checked={value === die.value}
-                            onChange={(e) => onChange(parseInt(e.target.value))}
-                        />
-                        <div className="hit-die-content">
-                            <div className="hit-die-label">{die.label}</div>
-                            <div className="hit-die-description">{die.description}</div>
-                        </div>
-                    </label>
-                ))}
-            </div>
-
-            {error && (
-                <div className="form-error">
-                    {error}
-                </div>
-            )}
-
-            {helperText && !error && (
-                <div className="form-helper">
-                    {helperText}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// ===================
-// SIZE SELECTOR
-// ===================
-
-export const SizeSelector = ({
-    label = "Size",
-    value,
-    onChange,
-    required = false,
-    error = null,
-    helperText = null
-}) => {
-    return (
-        <div className="form-field">
-            <label className="form-label">
-                {label}
-                {required && <span className="form-required">*</span>}
-            </label>
-
-            <select
-                className="form-select"
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value || null)}
-            >
-                <option value="">Select size...</option>
-                {SIZES.map(size => (
-                    <option key={size} value={size}>{size}</option>
-                ))}
-            </select>
-
-            {error && (
-                <div className="form-error">
-                    {error}
-                </div>
-            )}
-
-            {helperText && !error && (
-                <div className="form-helper">
-                    {helperText}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// ===================
-// ABILITY SCORE INCREASE EDITOR
-// ===================
-
-export const AbilityScoreIncreaseEditor = ({
-    label = "Ability Score Increases",
-    value = {},
-    onChange,
-    maxTotal = 3,
-    maxPerAbility = 2,
-    required = false,
-    error = null,
-    helperText = null
-}) => {
-    const handleAbilityChange = (ability, increase) => {
-        const newValue = { ...value };
-        if (increase === 0) {
-            delete newValue[ability];
-        } else {
-            newValue[ability] = increase;
-        }
-        onChange(newValue);
-    };
-
-    const getTotalIncrease = () => {
-        return Object.values(value).reduce((sum, increase) => sum + increase, 0);
-    };
-
-    const canIncrease = (ability) => {
-        const currentIncrease = value[ability] || 0;
-        return currentIncrease < maxPerAbility && getTotalIncrease() < maxTotal;
-    };
-
-    return (
-        <div className="form-field">
-            <label className="form-label">
-                {label}
-                {required && <span className="form-required">*</span>}
-            </label>
-
-            <div className="ability-increase-editor">
-                {ABILITY_SCORES.map(ability => {
-                    const currentIncrease = value[ability] || 0;
-
-                    return (
-                        <div key={ability} className="ability-increase-row">
-                            <div className="ability-name">{ability}</div>
-                            <div className="ability-increase-controls">
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline"
-                                    onClick={() => handleAbilityChange(ability, Math.max(0, currentIncrease - 1))}
-                                    disabled={currentIncrease === 0}
-                                >
-                                    -
-                                </button>
-                                <span className="ability-increase-value">+{currentIncrease}</span>
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline"
-                                    onClick={() => handleAbilityChange(ability, currentIncrease + 1)}
-                                    disabled={!canIncrease(ability)}
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            <div className="form-helper">
-                Total increase: {getTotalIncrease()}/{maxTotal}
-            </div>
-
-            {error && (
-                <div className="form-error">
-                    {error}
-                </div>
-            )}
-
-            {helperText && !error && (
-                <div className="form-helper">
-                    {helperText}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// ===================
-// FEATURE EDITOR
-// ===================
-
-export const FeatureEditor = ({
-    label = "Feature",
-    value = { name: '', description: '' },
-    onChange,
-    required = false,
-    error = null,
-    helperText = null
-}) => {
-    const handleChange = (field, newValue) => {
-        onChange({
-            ...value,
-            [field]: newValue
-        });
-    };
-
-    return (
-        <div className="form-field">
-            <label className="form-label">
-                {label}
-                {required && <span className="form-required">*</span>}
-            </label>
-
-            <div className="feature-editor">
-                <Input
-                    type="text"
-                    placeholder="Feature name..."
-                    value={value.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                />
-
-                <textarea
-                    className="form-textarea"
-                    placeholder="Feature description..."
-                    value={value.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
-                    rows={4}
-                />
-            </div>
 
             {error && (
                 <div className="form-error">
