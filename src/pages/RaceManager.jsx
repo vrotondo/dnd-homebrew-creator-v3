@@ -10,14 +10,9 @@ import {
     Trash2,
     Copy,
     Eye,
-    Filter,
-    Download,
-    Upload,
-    Star,
     Zap,
     Globe,
-    Users,
-    TrendingUp
+    Users
 } from 'lucide-react';
 
 function RaceManager() {
@@ -98,34 +93,80 @@ function RaceManager() {
         medium: races.filter(r => r.size === 'Medium').length,
         large: races.filter(r => r.size === 'Large').length,
         withDarkvision: races.filter(r => r.vision?.darkvision).length,
-        avgTraits: races.length > 0 ? (races.reduce((sum, r) => sum + (r.traits?.length || 0), 0) / races.length).toFixed(1) : 0
+        avgTraits: races.length > 0 ?
+            (races.reduce((sum, r) => sum + (r.traits?.length || 0), 0) / races.length).toFixed(1) : 0
     };
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-xl font-medium text-gray-700">Loading your races...</p>
-                    <p className="text-sm text-gray-500 mt-2">Gathering all your custom creations</p>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        border: '4px solid #f3f4f6',
+                        borderTopColor: '#7c3aed',
+                        borderRadius: '50%',
+                        margin: '0 auto 16px',
+                        animation: 'spin 1s linear infinite'
+                    }}></div>
+                    <p style={{ fontSize: '20px', fontWeight: '500', color: '#374151' }}>
+                        Loading your races...
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                        Gathering all your custom creations
+                    </p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-6">
-            {/* Header with Gradient Background */}
-            <div className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-8 border border-purple-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="p-3 bg-purple-600 rounded-xl shadow-lg">
-                                <Crown className="text-white" size={32} />
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
+            {/* Header */}
+            <div style={{
+                marginBottom: '32px',
+                background: 'linear-gradient(to bottom right, #faf5ff, #eff6ff)',
+                borderRadius: '16px',
+                padding: '32px',
+                border: '1px solid #e9d5ff',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '24px'
+                }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                            <div style={{
+                                padding: '12px',
+                                background: '#7c3aed',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                            }}>
+                                <Crown style={{ color: 'white' }} size={32} />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-bold text-gray-900">Race Manager</h1>
-                                <p className="text-gray-600 mt-1">
+                                <h1 style={{
+                                    fontSize: '36px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    margin: 0
+                                }}>
+                                    Race Manager
+                                </h1>
+                                <p style={{
+                                    color: '#4b5563',
+                                    marginTop: '4px',
+                                    margin: 0
+                                }}>
                                     Create, manage, and organize your custom D&D races
                                 </p>
                             </div>
@@ -133,268 +174,616 @@ function RaceManager() {
                     </div>
                     <Link
                         to="/races/create"
-                        className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 24px',
+                            background: '#7c3aed',
+                            color: 'white',
+                            borderRadius: '12px',
+                            textDecoration: 'none',
+                            fontWeight: '500',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                            transition: 'all 0.2s',
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#6d28d9';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = '#7c3aed';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                        }}
                     >
                         <Plus size={20} />
-                        <span className="font-medium">Create New Race</span>
+                        <span>Create New Race</span>
                     </Link>
                 </div>
 
-                {/* Enhanced Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="bg-white rounded-xl p-4 border border-purple-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Users className="text-purple-600" size={20} />
-                            <span className="text-2xl font-bold text-purple-900">{stats.total}</span>
+                {/* Stats Grid */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '16px'
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e9d5ff',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Users style={{ color: '#7c3aed' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#581c87' }}>{stats.total}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Total Races</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Races</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-blue-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="w-5 h-5 bg-blue-100 rounded flex items-center justify-center text-blue-700 text-xs font-bold">S</div>
-                            <span className="text-2xl font-bold text-blue-900">{stats.small}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #dbeafe',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{
+                                width: '20px',
+                                height: '20px',
+                                background: '#dbeafe',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#1e40af',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                            }}>S</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a' }}>{stats.small}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Small Size</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Small Size</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center text-green-700 text-xs font-bold">M</div>
-                            <span className="text-2xl font-bold text-green-900">{stats.medium}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #d1fae5',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{
+                                width: '20px',
+                                height: '20px',
+                                background: '#d1fae5',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#065f46',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                            }}>M</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#064e3b' }}>{stats.medium}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Medium Size</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Medium Size</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-orange-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="w-5 h-5 bg-orange-100 rounded flex items-center justify-center text-orange-700 text-xs font-bold">L</div>
-                            <span className="text-2xl font-bold text-orange-900">{stats.large}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #fed7aa',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{
+                                width: '20px',
+                                height: '20px',
+                                background: '#fed7aa',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9a3412',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                            }}>L</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#7c2d12' }}>{stats.large}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Large Size</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Large Size</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-indigo-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Eye className="text-indigo-600" size={20} />
-                            <span className="text-2xl font-bold text-indigo-900">{stats.withDarkvision}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Eye style={{ color: '#6b7280' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{stats.withDarkvision}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Darkvision</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Darkvision</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-pink-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Zap className="text-pink-600" size={20} />
-                            <span className="text-2xl font-bold text-pink-900">{stats.avgTraits}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Zap style={{ color: '#6b7280' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{stats.avgTraits}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Avg Traits</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Avg Traits</p>
                     </div>
                 </div>
             </div>
 
-            {/* Search, Filter, and Sort Bar */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Search races by name or description..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                            />
-                        </div>
-                    </div>
+            {/* Search and Filters */}
+            <div style={{
+                display: 'flex',
+                gap: '16px',
+                marginBottom: '24px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+                    <Search
+                        style={{
+                            position: 'absolute',
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#9ca3af'
+                        }}
+                        size={20}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search races by name or description..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '12px 12px 12px 44px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                            transition: 'all 0.2s'
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#7c3aed';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(124, 58, 237, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    />
+                </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <Filter size={18} className="text-gray-600" />
-                            <select
-                                value={filterSize}
-                                onChange={(e) => setFilterSize(e.target.value)}
-                                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
-                            >
-                                <option value="all">All Sizes</option>
-                                <option value="Small">Small</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Large">Large</option>
-                            </select>
-                        </div>
+                <select
+                    value={filterSize}
+                    onChange={(e) => setFilterSize(e.target.value)}
+                    style={{
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                    }}
+                >
+                    <option value="all">All Sizes</option>
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                </select>
 
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                    }}
+                >
+                    <option value="name">Sort by Name</option>
+                    <option value="size">Sort by Size</option>
+                    <option value="recent">Sort by Recent</option>
+                </select>
+            </div>
+
+            {/* Results Count */}
+            {(searchTerm || filterSize !== 'all') && filteredRaces.length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                    padding: '12px 16px',
+                    background: '#f3f4f6',
+                    borderRadius: '8px'
+                }}>
+                    <span style={{ fontSize: '14px', color: '#374151' }}>
+                        Found {filteredRaces.length} race{filteredRaces.length !== 1 ? 's' : ''}
+                    </span>
+                    {filteredRaces.length !== races.length && (
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterSize('all');
+                            }}
+                            style={{
+                                fontSize: '14px',
+                                color: '#7c3aed',
+                                fontWeight: '500',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                textDecoration: 'none'
+                            }}
+                            onMouseOver={(e) => e.target.style.color = '#6d28d9'}
+                            onMouseOut={(e) => e.target.style.color = '#7c3aed'}
                         >
-                            <option value="name">Sort by Name</option>
-                            <option value="size">Sort by Size</option>
-                            <option value="recent">Most Recent</option>
-                        </select>
-                    </div>
+                            Clear filters
+                        </button>
+                    )}
                 </div>
-
-                {searchTerm && (
-                    <div className="mt-4 flex items-center gap-2">
-                        <span className="text-sm text-gray-600">
-                            Found {filteredRaces.length} race{filteredRaces.length !== 1 ? 's' : ''}
-                        </span>
-                        {filteredRaces.length !== races.length && (
-                            <button
-                                onClick={() => setSearchTerm('')}
-                                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-                            >
-                                Clear search
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Race Cards Grid */}
             {filteredRaces.length === 0 ? (
-                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-100 rounded-full mb-6">
-                        <Crown className="text-purple-600" size={40} />
+                <div style={{
+                    textAlign: 'center',
+                    padding: '64px 16px',
+                    background: 'linear-gradient(to bottom right, #f9fafb, #f3f4f6)',
+                    borderRadius: '16px',
+                    border: '2px dashed #d1d5db'
+                }}>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '80px',
+                        height: '80px',
+                        background: '#f3e8ff',
+                        borderRadius: '50%',
+                        marginBottom: '24px'
+                    }}>
+                        <Crown style={{ color: '#7c3aed' }} size={40} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    <h3 style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: '12px'
+                    }}>
                         {searchTerm || filterSize !== 'all' ? 'No races found' : 'No races yet'}
                     </h3>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    <p style={{
+                        color: '#4b5563',
+                        marginBottom: '32px',
+                        maxWidth: '448px',
+                        margin: '0 auto 32px'
+                    }}>
                         {searchTerm || filterSize !== 'all'
-                            ? 'Try adjusting your search terms or filters to find what you\'re looking for'
-                            : 'Start building your campaign by creating your first custom race with unique traits and abilities'
-                        }
+                            ? 'Try adjusting your search or filters'
+                            : 'Create your first custom race to get started with your homebrew collection'}
                     </p>
                     {!searchTerm && filterSize === 'all' && (
                         <Link
                             to="/races/create"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-lg font-medium"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 24px',
+                                background: '#7c3aed',
+                                color: 'white',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontWeight: '500',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#6d28d9'}
+                            onMouseOut={(e) => e.currentTarget.style.background = '#7c3aed'}
                         >
                             <Plus size={20} />
-                            Create Your First Race
+                            Create First Race
                         </Link>
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredRaces.map(race => {
-                        const abilityBonuses = getAbilityBonuses(race);
-
-                        return (
-                            <div key={race.id} className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1">
-                                {/* Card Header with Gradient */}
-                                <div className="bg-gradient-to-br from-purple-500 to-blue-500 p-6 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-                                    <div className="relative">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div className="flex-1">
-                                                <h3 className="text-2xl font-bold text-white mb-2">{race.name}</h3>
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-medium">
-                                                        {race.size}
-                                                    </span>
-                                                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-medium">
-                                                        {race.speed} ft
-                                                    </span>
-                                                    {race.vision?.darkvision && (
-                                                        <span className="px-3 py-1 bg-yellow-400/30 backdrop-blur-sm text-white rounded-full text-xs font-medium flex items-center gap-1">
-                                                            <Eye size={12} />
-                                                            Darkvision
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <Crown className="text-white/80 flex-shrink-0" size={32} />
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                    gap: '24px'
+                }}>
+                    {filteredRaces.map((race) => (
+                        <div
+                            key={race.id}
+                            style={{
+                                background: 'white',
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s',
+                                cursor: 'pointer'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            {/* Card Header with Gradient */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                padding: '24px',
+                                color: 'white'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    justifyContent: 'space-between',
+                                    gap: '16px'
+                                }}>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            marginBottom: '12px',
+                                            margin: 0,
+                                            marginBottom: '12px'
+                                        }}>
+                                            {race.name}
+                                        </h3>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            flexWrap: 'wrap'
+                                        }}>
+                                            <span style={{
+                                                padding: '6px 12px',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                backdropFilter: 'blur(10px)',
+                                                borderRadius: '9999px',
+                                                fontSize: '12px',
+                                                fontWeight: '500'
+                                            }}>
+                                                {race.size}
+                                            </span>
+                                            <span style={{
+                                                padding: '6px 12px',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                backdropFilter: 'blur(10px)',
+                                                borderRadius: '9999px',
+                                                fontSize: '12px',
+                                                fontWeight: '500'
+                                            }}>
+                                                {race.speed} ft
+                                            </span>
+                                            {race.vision?.darkvision && (
+                                                <span style={{
+                                                    padding: '6px 12px',
+                                                    background: 'rgba(251, 191, 36, 0.3)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    borderRadius: '9999px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    <Eye size={12} />
+                                                    Darkvision
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Card Body */}
-                                <div className="p-6">
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
-                                        {race.description}
-                                    </p>
-
-                                    {/* Ability Bonuses */}
-                                    {abilityBonuses.length > 0 && (
-                                        <div className="mb-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <TrendingUp size={16} className="text-blue-600" />
-                                                <p className="text-xs font-bold text-blue-900 uppercase tracking-wide">Ability Increases</p>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {abilityBonuses.map((bonus, idx) => (
-                                                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
-                                                        {bonus}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Languages */}
-                                    {race.languages && race.languages.length > 0 && (
-                                        <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-100">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Globe size={14} className="text-green-600" />
-                                                <p className="text-xs font-semibold text-green-900">Languages</p>
-                                            </div>
-                                            <p className="text-sm text-green-700">{race.languages.slice(0, 3).join(', ')}{race.languages.length > 3 ? '...' : ''}</p>
-                                        </div>
-                                    )}
-
-                                    {/* Stats Row */}
-                                    <div className="flex items-center justify-between text-sm text-gray-600 py-3 border-t border-b border-gray-100 mb-4">
-                                        <div className="flex items-center gap-1">
-                                            <Zap size={16} className="text-purple-600" />
-                                            <span className="font-medium">{race.traits?.length || 0}</span>
-                                            <span className="text-xs">Traits</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Users size={16} className="text-blue-600" />
-                                            <span className="font-medium">{race.subraces?.length || 0}</span>
-                                            <span className="text-xs">Subraces</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Globe size={16} className="text-green-600" />
-                                            <span className="font-medium">{race.languages?.length || 0}</span>
-                                            <span className="text-xs">Languages</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <button
-                                            onClick={() => navigate(`/races/${race.id}/edit`)}
-                                            className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                            title="Edit Race"
-                                        >
-                                            <Edit size={16} />
-                                            <span className="hidden sm:inline">Edit</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleDuplicate(race.id)}
-                                            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
-                                            title="Duplicate Race"
-                                        >
-                                            <Copy size={16} />
-                                            <span className="hidden sm:inline">Copy</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(race.id, race.name)}
-                                            className="flex items-center justify-center gap-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                                            title="Delete Race"
-                                        >
-                                            <Trash2 size={16} />
-                                            <span className="hidden sm:inline">Delete</span>
-                                        </button>
-                                    </div>
+                                    <Crown style={{ color: 'rgba(255, 255, 255, 0.8)', flexShrink: 0 }} size={32} />
                                 </div>
                             </div>
-                        );
-                    })}
+
+                            {/* Card Body */}
+                            <div style={{ padding: '24px' }}>
+                                <p style={{
+                                    color: '#374151',
+                                    fontSize: '14px',
+                                    lineHeight: '1.6',
+                                    marginBottom: '16px',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                }}>
+                                    {race.description}
+                                </p>
+
+                                {/* Ability Bonuses */}
+                                {getAbilityBonuses(race).length > 0 && (
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            color: '#6b7280',
+                                            marginBottom: '8px',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}>
+                                            Ability Increases
+                                        </div>
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '8px'
+                                        }}>
+                                            {getAbilityBonuses(race).map((bonus, i) => (
+                                                <span
+                                                    key={i}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        background: '#ede9fe',
+                                                        color: '#6d28d9',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
+                                                    {bonus}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Stats Row */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontSize: '14px',
+                                    color: '#4b5563',
+                                    padding: '12px 0',
+                                    borderTop: '1px solid #f3f4f6',
+                                    borderBottom: '1px solid #f3f4f6',
+                                    marginBottom: '16px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Zap size={16} style={{ color: '#7c3aed' }} />
+                                        <span style={{ fontWeight: '500' }}>{race.traits?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Traits</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Users size={16} style={{ color: '#3b82f6' }} />
+                                        <span style={{ fontWeight: '500' }}>{race.subraces?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Subraces</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Globe size={16} style={{ color: '#10b981' }} />
+                                        <span style={{ fontWeight: '500' }}>{race.languages?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Languages</span>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '8px'
+                                }}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/races/${race.id}/edit`);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
+                                        title="Edit Race"
+                                    >
+                                        <Edit size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Edit</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDuplicate(race.id);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#4b5563',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#374151'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#4b5563'}
+                                        title="Duplicate Race"
+                                    >
+                                        <Copy size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Copy</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(race.id, race.name);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#dc2626',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+                                        title="Delete Race"
+                                    >
+                                        <Trash2 size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
