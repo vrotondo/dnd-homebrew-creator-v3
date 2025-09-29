@@ -1,4 +1,4 @@
-// src/components/creators/character/RaceCreator.jsx
+// src/components/creators/character/RaceCreator.jsx - FIXED VERSION
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveRace, getRaceById } from '../../../utils/storageService';
@@ -40,7 +40,6 @@ function RaceCreator({ onSave, onCancel }) {
     });
 
     const [errors, setErrors] = useState({});
-    const [touched, setTouched] = useState({});
     const [showExportModal, setShowExportModal] = useState(false);
 
     const steps = [
@@ -62,35 +61,6 @@ function RaceCreator({ onSave, onCancel }) {
         }
     }, [id]);
 
-    // Form validation
-    useEffect(() => {
-        const newErrors = {};
-
-        if (touched.name && !raceData.name) {
-            newErrors.name = 'Race name is required';
-        }
-
-        if (touched.description && !raceData.description) {
-            newErrors.description = 'Description is required';
-        } else if (touched.description && raceData.description.length < 20) {
-            newErrors.description = 'Description should be at least 20 characters';
-        }
-
-        // Validate ability score increases
-        const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-        if (touched.abilityScoreIncreases && totalASI < 1) {
-            newErrors.abilityScoreIncreases = 'At least one ability score increase is required';
-        } else if (touched.abilityScoreIncreases && totalASI > 3) {
-            newErrors.abilityScoreIncreases = 'Total ability score increases cannot exceed 3';
-        }
-
-        if (touched.languages && raceData.languages.length === 0) {
-            newErrors.languages = 'At least one language is required';
-        }
-
-        setErrors(newErrors);
-    }, [raceData, touched]);
-
     const updateRaceData = (updates) => {
         setRaceData(prev => ({ ...prev, ...updates }));
     };
@@ -106,8 +76,6 @@ function RaceCreator({ onSave, onCancel }) {
         } else {
             updateRaceData({ [name]: type === 'checkbox' ? checked : value });
         }
-
-        setTouched(prev => ({ ...prev, [name]: true }));
     };
 
     const handleAbilityChange = (ability, value) => {
@@ -115,7 +83,6 @@ function RaceCreator({ onSave, onCancel }) {
         updateRaceData({
             abilityScoreIncreases: { ...raceData.abilityScoreIncreases, [ability]: numValue }
         });
-        setTouched(prev => ({ ...prev, abilityScoreIncreases: true }));
     };
 
     const handleLanguageChange = (language, checked) => {
@@ -124,62 +91,79 @@ function RaceCreator({ onSave, onCancel }) {
         } else {
             updateRaceData({ languages: raceData.languages.filter(l => l !== language) });
         }
-        setTouched(prev => ({ ...prev, languages: true }));
     };
 
-    const validateStep = () => {
-        const newErrors = {};
-
+    const canProceedToNextStep = () => {
+        // Step 1: Basic Info - requires name and description
         if (currentStep === 1) {
-            if (!raceData.name.trim()) newErrors.name = 'Race name is required';
-            if (!raceData.description.trim()) newErrors.description = 'Description is required';
-            else if (raceData.description.length < 20) newErrors.description = 'Description should be at least 20 characters';
+            if (!raceData.name.trim()) return false;
+            if (!raceData.description.trim() || raceData.description.length < 20) return false;
+            return true;
         }
 
+        // Step 2: Abilities - requires at least 1 point, max 3
         if (currentStep === 2) {
             const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-            if (totalASI < 1) {
-                newErrors.abilityScoreIncreases = 'At least one ability score increase is required';
-            } else if (totalASI > 3) {
-                newErrors.abilityScoreIncreases = 'Total ability score increases cannot exceed 3';
-            }
+            if (totalASI < 1 || totalASI > 3) return false;
+            return true;
         }
 
+        // Step 3: Languages - requires at least one
         if (currentStep === 3) {
-            if (raceData.languages.length === 0) {
-                newErrors.languages = 'At least one language is required';
-            }
+            if (raceData.languages.length === 0) return false;
+            return true;
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        // Steps 4, 5, 6 are optional - always can proceed
+        return true;
     };
 
     const nextStep = () => {
-        if (validateStep() && currentStep < steps.length) {
+        console.log('Next clicked, current step:', currentStep);
+        console.log('Can proceed:', canProceedToNextStep());
+        console.log('Race data:', raceData);
+
+        if (canProceedToNextStep() && currentStep < steps.length) {
             setCurrentStep(currentStep + 1);
+            setErrors({});
+        } else {
+            // Show validation errors
+            const newErrors = {};
+            if (currentStep === 1) {
+                if (!raceData.name.trim()) newErrors.name = 'Race name is required';
+                if (!raceData.description.trim()) newErrors.description = 'Description is required';
+                else if (raceData.description.length < 20) newErrors.description = 'Description must be at least 20 characters';
+            }
+            if (currentStep === 2) {
+                const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
+                if (totalASI < 1) newErrors.abilities = 'You must allocate at least 1 ability score increase';
+                if (totalASI > 3) newErrors.abilities = 'Total ability score increases cannot exceed 3';
+            }
+            if (currentStep === 3) {
+                if (raceData.languages.length === 0) newErrors.languages = 'You must select at least one language';
+            }
+            setErrors(newErrors);
         }
     };
 
     const prevStep = () => {
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1);
+            setErrors({});
         }
     };
 
     const handleSave = () => {
-        if (validateStep()) {
-            try {
-                const savedId = saveRace(raceData);
-                if (onSave) {
-                    onSave(savedId);
-                } else {
-                    navigate('/races');
-                }
-            } catch (error) {
-                console.error('Error saving race:', error);
-                alert('Error saving race. Please try again.');
+        try {
+            const savedId = saveRace(raceData);
+            if (onSave) {
+                onSave(savedId);
+            } else {
+                navigate('/races');
             }
+        } catch (error) {
+            console.error('Error saving race:', error);
+            alert('Error saving race. Please try again.');
         }
     };
 
@@ -187,41 +171,74 @@ function RaceCreator({ onSave, onCancel }) {
         switch (currentStep) {
             case 1: // Basic Info
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Race Name *</label>
+                    <div style={{ padding: '24px' }}>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                Race Name *
+                            </label>
                             <input
                                 type="text"
                                 name="name"
                                 value={raceData.name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.name ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px'
+                                }}
                                 placeholder="e.g., Dragonborn"
                             />
-                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                            {errors.name && (
+                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.name}</p>
+                            )}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description *</label>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                Description *
+                            </label>
                             <textarea
                                 name="description"
                                 value={raceData.description}
                                 onChange={handleInputChange}
                                 rows={4}
-                                className={`w-full px-3 py-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    resize: 'vertical'
+                                }}
                                 placeholder="Describe the race's appearance, culture, and characteristics..."
                             />
-                            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                            {errors.description && (
+                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.description}</p>
+                            )}
+                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                                {raceData.description.length}/20 characters minimum
+                            </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Size</label>
+                                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                    Size
+                                </label>
                                 <select
                                     name="size"
                                     value={raceData.size}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        backgroundColor: 'white'
+                                    }}
                                 >
                                     <option value="Small">Small</option>
                                     <option value="Medium">Medium</option>
@@ -230,7 +247,9 @@ function RaceCreator({ onSave, onCancel }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Speed (feet)</label>
+                                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                    Speed (feet)
+                                </label>
                                 <input
                                     type="number"
                                     name="speed"
@@ -239,21 +258,34 @@ function RaceCreator({ onSave, onCancel }) {
                                     min="10"
                                     max="60"
                                     step="5"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '16px'
+                                    }}
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Age & Lifespan</label>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                Age & Lifespan
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                 <input
                                     type="text"
                                     name="age.maturity"
                                     value={raceData.age.maturity}
                                     onChange={handleInputChange}
                                     placeholder="Reaches adulthood at..."
-                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                    style={{
+                                        padding: '12px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '16px'
+                                    }}
                                 />
                                 <input
                                     type="text"
@@ -261,45 +293,68 @@ function RaceCreator({ onSave, onCancel }) {
                                     value={raceData.age.lifespan}
                                     onChange={handleInputChange}
                                     placeholder="Lives about..."
-                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                    style={{
+                                        padding: '12px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '16px'
+                                    }}
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Alignment</label>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                Alignment
+                            </label>
                             <input
                                 type="text"
                                 name="alignment"
                                 value={raceData.alignment}
                                 onChange={handleInputChange}
                                 placeholder="e.g., Usually chaotic good"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px'
+                                }}
                             />
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <input
                                 type="checkbox"
                                 name="vision.darkvision"
                                 checked={raceData.vision.darkvision}
                                 onChange={handleInputChange}
-                                className="rounded border-gray-300"
+                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                             />
-                            <label className="text-sm font-medium">Has Darkvision</label>
+                            <label style={{ fontWeight: '500', fontSize: '14px', cursor: 'pointer' }}>
+                                Has Darkvision
+                            </label>
                             {raceData.vision.darkvision && (
-                                <input
-                                    type="number"
-                                    name="vision.range"
-                                    value={raceData.vision.range}
-                                    onChange={handleInputChange}
-                                    min="30"
-                                    max="120"
-                                    step="30"
-                                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                />
+                                <>
+                                    <input
+                                        type="number"
+                                        name="vision.range"
+                                        value={raceData.vision.range}
+                                        onChange={handleInputChange}
+                                        min="30"
+                                        max="120"
+                                        step="30"
+                                        style={{
+                                            width: '80px',
+                                            padding: '8px',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '6px',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                    <span style={{ fontSize: '14px', color: '#6b7280' }}>feet</span>
+                                </>
                             )}
-                            {raceData.vision.darkvision && <span className="text-sm text-gray-600">feet</span>}
                         </div>
                     </div>
                 );
@@ -313,46 +368,83 @@ function RaceCreator({ onSave, onCancel }) {
                 const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
 
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium mb-4">Ability Score Increases</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Most races get +2 to one ability and +1 to another (total: 3), or +1 to two abilities (total: 2).
-                            </p>
+                    <div style={{ padding: '24px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                            Ability Score Increases
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Most races get +2 to one ability and +1 to another (total: 3), or +1 to two abilities (total: 2).
+                        </p>
 
-                            {errors.abilityScoreIncreases && (
-                                <p className="text-red-500 text-sm mb-4">{errors.abilityScoreIncreases}</p>
-                            )}
+                        {errors.abilities && (
+                            <div style={{
+                                padding: '12px',
+                                backgroundColor: '#fee2e2',
+                                border: '1px solid #ef4444',
+                                borderRadius: '8px',
+                                marginBottom: '16px',
+                                color: '#dc2626'
+                            }}>
+                                {errors.abilities}
+                            </div>
+                        )}
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {abilities.map(ability => (
-                                    <div key={ability} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                                        <div>
-                                            <div className="font-medium">{ability}</div>
-                                            <div className="text-sm text-gray-500">{abilityNames[ability]}</div>
-                                        </div>
-                                        <select
-                                            value={raceData.abilityScoreIncreases[ability]}
-                                            onChange={(e) => handleAbilityChange(ability, e.target.value)}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
-                                        >
-                                            <option value={0}>+0</option>
-                                            <option value={1}>+1</option>
-                                            <option value={2}>+2</option>
-                                            <option value={3}>+3</option>
-                                        </select>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '24px'
+                        }}>
+                            {abilities.map(ability => (
+                                <div key={ability} style={{
+                                    padding: '16px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    backgroundColor: 'white'
+                                }}>
+                                    <div>
+                                        <div style={{ fontWeight: '600', fontSize: '16px' }}>{ability}</div>
+                                        <div style={{ fontSize: '14px', color: '#6b7280' }}>{abilityNames[ability]}</div>
                                     </div>
-                                ))}
-                            </div>
+                                    <select
+                                        value={raceData.abilityScoreIncreases[ability]}
+                                        onChange={(e) => handleAbilityChange(ability, e.target.value)}
+                                        style={{
+                                            width: '70px',
+                                            padding: '8px',
+                                            border: '2px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            textAlign: 'center',
+                                            backgroundColor: 'white',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <option value={0}>+0</option>
+                                        <option value={1}>+1</option>
+                                        <option value={2}>+2</option>
+                                        <option value={3}>+3</option>
+                                    </select>
+                                </div>
+                            ))}
+                        </div>
 
-                            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                                <p className="text-sm">
-                                    <strong>Total Ability Score Increases:</strong> +{totalASI}
-                                    {totalASI < 1 && <span className="text-red-500 ml-2">Too few points allocated</span>}
-                                    {totalASI > 3 && <span className="text-red-500 ml-2">Too many points allocated</span>}
-                                    {(totalASI >= 1 && totalASI <= 3) && <span className="text-green-500 ml-2">✓ Valid</span>}
-                                </p>
-                            </div>
+                        <div style={{
+                            padding: '16px',
+                            backgroundColor: totalASI >= 1 && totalASI <= 3 ? '#d1fae5' : '#fee2e2',
+                            borderRadius: '12px',
+                            border: `2px solid ${totalASI >= 1 && totalASI <= 3 ? '#10b981' : '#ef4444'}`
+                        }}>
+                            <p style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>
+                                Total Ability Score Increases: +{totalASI}
+                                {totalASI < 1 && <span style={{ color: '#dc2626', marginLeft: '8px' }}>⚠ Too few points</span>}
+                                {totalASI > 3 && <span style={{ color: '#dc2626', marginLeft: '8px' }}>⚠ Too many points</span>}
+                                {(totalASI >= 1 && totalASI <= 3) && <span style={{ color: '#059669', marginLeft: '8px' }}>✓ Valid</span>}
+                            </p>
                         </div>
                     </div>
                 );
@@ -365,79 +457,121 @@ function RaceCreator({ onSave, onCancel }) {
                 ];
 
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium mb-4">Languages</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Most races speak Common plus one or more additional languages.
-                            </p>
+                    <div style={{ padding: '24px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                            Languages
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Most races speak Common plus one or more additional languages.
+                        </p>
 
-                            {errors.languages && (
-                                <p className="text-red-500 text-sm mb-4">{errors.languages}</p>
-                            )}
-
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                {languages.map(language => (
-                                    <label key={language} className="flex items-center space-x-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={raceData.languages.includes(language)}
-                                            onChange={(e) => handleLanguageChange(language, e.target.checked)}
-                                            className="rounded border-gray-300"
-                                        />
-                                        <span className={`text-sm ${raceData.languages.includes(language) ? 'font-medium text-blue-600' : ''}`}>
-                                            {language}
-                                        </span>
-                                    </label>
-                                ))}
+                        {errors.languages && (
+                            <div style={{
+                                padding: '12px',
+                                backgroundColor: '#fee2e2',
+                                border: '1px solid #ef4444',
+                                borderRadius: '8px',
+                                marginBottom: '16px',
+                                color: '#dc2626'
+                            }}>
+                                {errors.languages}
                             </div>
+                        )}
 
-                            {raceData.languages.length > 0 && (
-                                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                                    <p className="text-sm"><strong>Selected:</strong> {raceData.languages.join(', ')}</p>
-                                </div>
-                            )}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                            marginBottom: '24px'
+                        }}>
+                            {languages.map(language => (
+                                <label key={language} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '12px',
+                                    border: raceData.languages.includes(language) ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    backgroundColor: raceData.languages.includes(language) ? '#eff6ff' : 'white',
+                                    transition: 'all 0.2s'
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={raceData.languages.includes(language)}
+                                        onChange={(e) => handleLanguageChange(language, e.target.checked)}
+                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                    />
+                                    <span style={{
+                                        fontSize: '14px',
+                                        fontWeight: raceData.languages.includes(language) ? '600' : '400',
+                                        color: raceData.languages.includes(language) ? '#1e40af' : '#374151'
+                                    }}>
+                                        {language}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
+
+                        {raceData.languages.length > 0 && (
+                            <div style={{
+                                padding: '16px',
+                                backgroundColor: '#dbeafe',
+                                borderRadius: '12px',
+                                border: '2px solid #3b82f6'
+                            }}>
+                                <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>
+                                    <strong>Selected:</strong> {raceData.languages.join(', ')}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 );
 
             case 4: // Traits
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium mb-4">Racial Traits</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Add unique abilities, resistances, or features that define this race.
-                            </p>
+                    <div style={{ padding: '24px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                            Racial Traits (Optional)
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Add unique abilities, resistances, or features that define this race. This step is optional.
+                        </p>
 
-                            <RacialTraits raceData={raceData} updateRaceData={updateRaceData} />
-                        </div>
+                        <RacialTraits raceData={raceData} updateRaceData={updateRaceData} />
                     </div>
                 );
 
             case 5: // Subraces
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium mb-4">Subraces (Optional)</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Add subraces to provide variants of your main race. Each subrace can have
-                                additional ability score increases and traits.
-                            </p>
+                    <div style={{ padding: '24px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                            Subraces (Optional)
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Add subraces to provide variants of your main race.
+                        </p>
 
-                            <Subraces raceData={raceData} updateRaceData={updateRaceData} />
-                        </div>
+                        <Subraces raceData={raceData} updateRaceData={updateRaceData} />
                     </div>
                 );
 
             case 6: // Preview
                 return (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-medium">Race Preview</h3>
+                    <div style={{ padding: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>Race Preview</h3>
                             <button
                                 onClick={() => setShowExportModal(true)}
-                                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                                style={{
+                                    padding: '12px 24px',
+                                    backgroundColor: '#6b7280',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}
                             >
                                 Export
                             </button>
@@ -460,61 +594,113 @@ function RaceCreator({ onSave, onCancel }) {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '32px' }}>
+                <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
                     {id ? 'Edit Race' : 'Create Race'}
                 </h1>
-                <p className="text-gray-600">Design a custom race with unique traits and abilities</p>
+                <p style={{ color: '#6b7280', fontSize: '16px' }}>
+                    Design a custom race with unique traits and abilities
+                </p>
             </div>
 
             {/* Step Navigation */}
-            <div className="flex items-center justify-between mb-8 overflow-x-auto">
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '32px',
+                padding: '24px',
+                backgroundColor: '#f9fafb',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb'
+            }}>
                 {steps.map((step, index) => (
-                    <div key={step.id} className="flex items-center min-w-0">
-                        <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
-                                    ? 'bg-blue-600 text-white'
-                                    : currentStep > step.id
-                                        ? 'bg-green-600 text-white'
-                                        : 'bg-gray-200 text-gray-600'
-                                }`}
-                        >
-                            {currentStep > step.id ? <Check size={16} /> : step.id}
+                    <div key={step.id} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            backgroundColor: currentStep === step.id ? '#3b82f6' : currentStep > step.id ? '#10b981' : '#e5e7eb',
+                            color: currentStep >= step.id ? 'white' : '#6b7280',
+                            border: currentStep === step.id ? '3px solid #93c5fd' : 'none'
+                        }}>
+                            {currentStep > step.id ? '✓' : step.id}
                         </div>
-                        <span className={`ml-2 text-sm whitespace-nowrap ${currentStep === step.id ? 'font-medium text-blue-600' : 'text-gray-600'}`}>
+                        <span style={{
+                            marginLeft: '12px',
+                            fontSize: '14px',
+                            fontWeight: currentStep === step.id ? '600' : '400',
+                            color: currentStep === step.id ? '#1e40af' : '#6b7280'
+                        }}>
                             {step.name}
                         </span>
                         {index < steps.length - 1 && (
-                            <div className="w-8 h-px bg-gray-300 mx-4 flex-shrink-0"></div>
+                            <div style={{
+                                flex: 1,
+                                height: '2px',
+                                backgroundColor: currentStep > step.id ? '#10b981' : '#e5e7eb',
+                                margin: '0 16px'
+                            }} />
                         )}
                     </div>
                 ))}
             </div>
 
             {/* Step Content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                marginBottom: '24px',
+                minHeight: '400px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}>
                 {renderStepContent()}
             </div>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button
                     onClick={prevStep}
                     disabled={currentStep === 1}
-                    className={`flex items-center px-4 py-2 rounded-md ${currentStep === 1
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-gray-600 text-white hover:bg-gray-700'
-                        }`}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 24px',
+                        backgroundColor: currentStep === 1 ? '#f3f4f6' : '#6b7280',
+                        color: currentStep === 1 ? '#9ca3af' : 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '500',
+                        fontSize: '16px',
+                        cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+                        opacity: currentStep === 1 ? 0.5 : 1
+                    }}
                 >
-                    <ChevronLeft size={16} className="mr-1" />
+                    <ChevronLeft size={20} />
                     Previous
                 </button>
 
-                <div className="flex gap-2">
+                <div style={{ display: 'flex', gap: '12px' }}>
                     <button
                         onClick={onCancel || (() => navigate('/races'))}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        style={{
+                            padding: '12px 24px',
+                            border: '2px solid #d1d5db',
+                            backgroundColor: 'white',
+                            color: '#374151',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            fontSize: '16px',
+                            cursor: 'pointer'
+                        }}
                     >
                         Cancel
                     </button>
@@ -522,17 +708,43 @@ function RaceCreator({ onSave, onCancel }) {
                     {currentStep < steps.length ? (
                         <button
                             onClick={nextStep}
-                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 32px',
+                                backgroundColor: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 6px rgba(59, 130, 246, 0.3)'
+                            }}
                         >
                             Next
-                            <ChevronRight size={16} className="ml-1" />
+                            <ChevronRight size={20} />
                         </button>
                     ) : (
                         <button
                             onClick={handleSave}
-                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 32px',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)'
+                            }}
                         >
-                            <Check size={16} className="mr-1" />
+                            <Check size={20} />
                             Save Race
                         </button>
                     )}

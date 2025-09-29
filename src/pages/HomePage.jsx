@@ -69,7 +69,7 @@ function HomePage() {
             icon: Crown,
             bgColor: '#f3e8ff',
             textColor: '#7c3aed',
-            link: '/character/races',
+            link: '/races/create',
             stats: stats.races,
             features: ['Ability Score Bonuses', 'Racial Traits', 'Subrace Support', 'Language Options']
         },
@@ -80,7 +80,7 @@ function HomePage() {
             icon: BookOpen,
             bgColor: '#dbeafe',
             textColor: '#2563eb',
-            link: '/character/backgrounds',
+            link: '/backgrounds/create',
             stats: stats.backgrounds,
             features: ['Skill Proficiencies', 'Starting Equipment', 'Background Features', 'Personality Traits']
         },

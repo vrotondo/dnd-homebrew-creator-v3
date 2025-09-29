@@ -24,6 +24,8 @@ import HomePage from './pages/HomePage';
 import CharacterCreatorPage from './pages/CharacterCreatorPage';
 import AboutPage from './pages/AboutPage';
 import ClassManager from './pages/ClassManager';
+import RaceManager from './pages/RaceManager';
+import BackgroundManager from './pages/BackgroundManager';
 
 import ClassCreator from './components/creators/character/ClassCreator';
 import RaceCreator from './components/creators/character/RaceCreator';
@@ -219,9 +221,13 @@ function App() {
                 <Route path="/character/backgrounds/create" element={<BackgroundCreator />} />
                 <Route path="/character/backgrounds/:id/edit" element={<BackgroundCreator />} />
 
-                {/* Other content type routes (placeholder for now) */}
-                <Route path="/races" element={<PlaceholderPage title="Race Manager" />} />
-                <Route path="/backgrounds" element={<PlaceholderPage title="Background Manager" />} />
+                <Route path="/races" element={<RaceManager />} />
+                <Route path="/races/create" element={<RaceCreator />} />
+                <Route path="/races/:id/edit" element={<RaceCreator />} />
+
+                <Route path="/backgrounds" element={<BackgroundManager />} />
+                <Route path="/backgrounds/create" element={<BackgroundCreator />} />
+                <Route path="/backgrounds/:id/edit" element={<BackgroundCreator />} />
 
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
