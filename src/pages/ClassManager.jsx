@@ -1,455 +1,798 @@
-// src/pages/ClassManager.jsx - Updated with proper styling and UI components
+// src/pages/ClassManager.jsx - FIXED VERSION
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { getClasses, deleteClass, duplicateClass } from '../utils/storageService';
 import {
-    Card,
-    CardHeader,
-    CardContent,
-    Button,
-    Input,
-    Badge,
-    EmptyState
-} from '../components/ui';
-import {
+    Sword,
     Plus,
     Search,
-    Filter,
     Edit,
-    Copy,
-    Download,
     Trash2,
-    Eye,
-    Clock,
-    Star,
-    Sword,
-    Shield,
+    Copy,
     Heart,
-    X
+    Shield,
+    Zap,
+    Target
 } from 'lucide-react';
-import {
-    getClasses, deleteClass, duplicateClass,
-    getSubclasses, deleteSubclass, duplicateSubclass,
-    getClassById
-} from '../utils/storageService';
-import ExportModal from '../components/export/ExportModal';
 
 function ClassManager() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('classes');
     const [classes, setClasses] = useState([]);
-    const [subclasses, setSubclasses] = useState([]);
-    const [filteredItems, setFilteredItems] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState({ field: 'updatedAt', direction: 'desc' });
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [showExportModal, setShowExportModal] = useState(false);
-    const [showFilters, setShowFilters] = useState(false);
-    const [filterOptions, setFilterOptions] = useState({
-        classes: {
-            hitDice: [],
-            primaryAbility: []
-        },
-        subclasses: {
-            parentClass: []
-        }
-    });
+    const [filterDice, setFilterDice] = useState('all');
+    const [sortBy, setSortBy] = useState('name');
 
-    // Load data on component mount and when tab changes
     useEffect(() => {
-        loadData();
-    }, [activeTab]);
+        loadClasses();
+    }, []);
 
-    // Load classes and subclasses
-    const loadData = () => {
-        if (activeTab === 'classes') {
-            loadClasses();
-        } else {
-            loadSubclasses();
-        }
-    };
-
-    // Apply filters and search
-    const applyFilters = (items, search, filters, type) => {
-        let filtered = items;
-
-        // Apply search filter
-        if (search) {
-            filtered = filtered.filter(item =>
-                item.name.toLowerCase().includes(search.toLowerCase()) ||
-                (item.description && item.description.toLowerCase().includes(search.toLowerCase()))
-            );
-        }
-
-        // Apply type-specific filters
-        if (type === 'classes') {
-            if (filters.hitDice && filters.hitDice.length > 0) {
-                filtered = filtered.filter(item => filters.hitDice.includes(item.hitDie));
-            }
-            if (filters.primaryAbility && filters.primaryAbility.length > 0) {
-                filtered = filtered.filter(item =>
-                    item.primaryAbility && item.primaryAbility.some(ability =>
-                        filters.primaryAbility.includes(ability)
-                    )
-                );
-            }
-        } else if (type === 'subclasses') {
-            if (filters.parentClass && filters.parentClass.length > 0) {
-                filtered = filtered.filter(item => filters.parentClass.includes(item.parentClass));
-            }
-        }
-
-        setFilteredItems(filtered);
-    };
-
-    // Load classes
     const loadClasses = () => {
-        const allClasses = getClasses({ sortBy });
-        setClasses(allClasses);
-        applyFilters(allClasses, searchTerm, filterOptions.classes, 'classes');
-    };
-
-    // Load subclasses
-    const loadSubclasses = () => {
-        const allSubclasses = getSubclasses({ sortBy });
-        setSubclasses(allSubclasses);
-        applyFilters(allSubclasses, searchTerm, filterOptions.subclasses, 'subclasses');
-    };
-
-    // Handle search
-    const handleSearch = (e) => {
-        const search = e.target.value;
-        setSearchTerm(search);
-        const items = activeTab === 'classes' ? classes : subclasses;
-        const filters = activeTab === 'classes' ? filterOptions.classes : filterOptions.subclasses;
-        applyFilters(items, search, filters, activeTab);
-    };
-
-    // Handle item actions
-    const handleEdit = (item) => {
-        if (activeTab === 'classes') {
-            navigate(`/character-creator/class/${item.id}`);
-        } else {
-            navigate(`/character-creator/subclass/${item.id}`);
+        setLoading(true);
+        try {
+            const savedClasses = getClasses();
+            setClasses(savedClasses);
+        } catch (error) {
+            console.error('Error loading classes:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleDelete = (item) => {
-        if (window.confirm(`Are you sure you want to delete "${item.name}"? This cannot be undone.`)) {
-            if (activeTab === 'classes') {
-                deleteClass(item.id);
+    const handleDelete = (id, name) => {
+        if (window.confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) {
+            const success = deleteClass(id);
+            if (success) {
                 loadClasses();
             } else {
-                deleteSubclass(item.id);
-                loadSubclasses();
+                alert('Failed to delete class');
             }
         }
     };
 
-    const handleDuplicate = (item) => {
-        if (activeTab === 'classes') {
-            duplicateClass(item);
-            loadClasses();
-        } else {
-            duplicateSubclass(item);
-            loadSubclasses();
+    const handleDuplicate = (id) => {
+        const classData = classes.find(c => c.id === id);
+        if (classData) {
+            const newId = duplicateClass(classData);
+            if (newId) {
+                loadClasses();
+            } else {
+                alert('Failed to duplicate class');
+            }
         }
     };
 
-    const handleExport = (item) => {
-        setSelectedItem(item);
-        setShowExportModal(true);
-    };
-
-    // Format date
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Never';
-        const date = new Date(dateString);
-        return date.toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+    // Filter and sort classes
+    const filteredClasses = classes
+        .filter(cls => {
+            const matchesSearch = cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cls.description.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesDice = filterDice === 'all' || cls.hitDie === filterDice;
+            return matchesSearch && matchesDice;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            if (sortBy === 'hitDie') return parseInt(b.hitDie) - parseInt(a.hitDie);
+            if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            return 0;
         });
-    };
 
-    // Get features count
-    const getFeaturesCount = (item) => {
-        if (!item.features) return 0;
-        return Object.values(item.features).reduce((total, levelFeatures) =>
-            total + (levelFeatures ? levelFeatures.length : 0), 0
+    const getFeaturesCount = (classData) => {
+        if (!classData.features) return 0;
+        return Object.values(classData.features).reduce((total, levelFeatures) =>
+            total + (levelFeatures?.length || 0), 0
         );
     };
 
-    const currentItems = filteredItems;
-    const emptyText = searchTerm || showFilters
-        ? `No ${activeTab} found matching your criteria.`
-        : `You haven't created any ${activeTab} yet.`;
+    const stats = {
+        total: classes.length,
+        spellcasters: classes.filter(c => c.spellcasting?.enabled).length,
+        avgHitDie: classes.length > 0 ?
+            (classes.reduce((sum, c) => sum + (parseInt(c.hitDie) || 0), 0) / classes.length).toFixed(1) : 0,
+        totalFeatures: classes.reduce((sum, c) => sum + getFeaturesCount(c), 0),
+        d6Classes: classes.filter(c => c.hitDie === 'd6').length,
+        d8Classes: classes.filter(c => c.hitDie === 'd8').length,
+        d10Classes: classes.filter(c => c.hitDie === 'd10').length,
+        d12Classes: classes.filter(c => c.hitDie === 'd12').length
+    };
+
+    if (loading) {
+        return (
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        border: '4px solid #f3f4f6',
+                        borderTopColor: '#dc2626',
+                        borderRadius: '50%',
+                        margin: '0 auto 16px',
+                        animation: 'spin 1s linear infinite'
+                    }}></div>
+                    <p style={{ fontSize: '20px', fontWeight: '500', color: '#374151' }}>
+                        Loading your classes...
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                        Gathering all your custom creations
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
             {/* Header */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Manage Classes & Subclasses
-                            </h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                View, edit, and organize your homebrew character classes
-                            </p>
+            <div style={{
+                marginBottom: '32px',
+                background: 'linear-gradient(to bottom right, #fee2e2, #fef3c7)',
+                borderRadius: '16px',
+                padding: '32px',
+                border: '1px solid #fecaca',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '24px'
+                }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                            <div style={{
+                                padding: '12px',
+                                background: '#dc2626',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                            }}>
+                                <Sword style={{ color: 'white' }} size={32} />
+                            </div>
+                            <div>
+                                <h1 style={{
+                                    fontSize: '36px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    margin: 0
+                                }}>
+                                    Class Manager
+                                </h1>
+                                <p style={{
+                                    color: '#4b5563',
+                                    marginTop: '4px',
+                                    margin: 0
+                                }}>
+                                    Create and manage powerful character classes
+                                </p>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            {activeTab === 'classes' ? (
-                                <Link to="/character-creator/class/new">
-                                    <Button className="gap-2">
-                                        <Plus className="w-4 h-4" />
-                                        Create Class
-                                    </Button>
-                                </Link>
-                            ) : (
-                                <Link to="/character-creator/subclass/new">
-                                    <Button className="gap-2">
-                                        <Plus className="w-4 h-4" />
-                                        Create Subclass
-                                    </Button>
-                                </Link>
-                            )}
+                    </div>
+                    <Link
+                        to="/classes/create"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 24px',
+                            background: '#dc2626',
+                            color: 'white',
+                            borderRadius: '12px',
+                            textDecoration: 'none',
+                            fontWeight: '500',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                            transition: 'all 0.2s',
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#b91c1c';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = '#dc2626';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                        }}
+                    >
+                        <Plus size={20} />
+                        <span>Create New Class</span>
+                    </Link>
+                </div>
+
+                {/* Stats Grid */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '16px'
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #fecaca',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Sword style={{ color: '#dc2626' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#7f1d1d' }}>{stats.total}</span>
                         </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Classes</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #dbeafe',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Zap style={{ color: '#3b82f6' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e40af' }}>{stats.spellcasters}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Spellcasters</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #fecaca',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Heart style={{ color: '#dc2626' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#7f1d1d' }}>{stats.avgHitDie}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Avg Hit Die</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #d1fae5',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Target style={{ color: '#10b981' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#065f46' }}>{stats.totalFeatures}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Features</p>
+                    </div>
+
+                    {/* Hit Dice Distribution */}
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ width: '20px', height: '20px', background: '#fecaca', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#7f1d1d' }}>d6</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#7f1d1d' }}>{stats.d6Classes}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>d6 Classes</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ width: '20px', height: '20px', background: '#fed7aa', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#9a3412' }}>d8</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#9a3412' }}>{stats.d8Classes}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>d8 Classes</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ width: '20px', height: '20px', background: '#d1fae5', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: '#065f46' }}>d10</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#065f46' }}>{stats.d10Classes}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>d10 Classes</p>
+                    </div>
+
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ width: '20px', height: '20px', background: '#dbeafe', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: '#1e40af' }}>d12</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e40af' }}>{stats.d12Classes}</span>
+                        </div>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>d12 Classes</p>
                     </div>
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                {/* Tab Navigation */}
-                <Card className="mb-6">
-                    <CardContent className="p-0">
-                        <div className="flex border-b border-gray-200 dark:border-gray-700">
-                            <button
-                                onClick={() => setActiveTab('classes')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'classes'
-                                        ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Sword className="w-4 h-4" />
-                                    Classes ({classes.length})
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('subclasses')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'subclasses'
-                                        ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Shield className="w-4 h-4" />
-                                    Subclasses ({subclasses.length})
-                                </div>
-                            </button>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Search and Controls */}
-                <Card className="mb-6">
-                    <CardContent className="p-4">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="flex-1">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                    <Input
-                                        type="text"
-                                        placeholder={`Search ${activeTab}...`}
-                                        value={searchTerm}
-                                        onChange={handleSearch}
-                                        className="pl-10"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className="gap-2"
-                                >
-                                    <Filter className="w-4 h-4" />
-                                    Filters
-                                </Button>
-                                <select
-                                    value={`${sortBy.field}-${sortBy.direction}`}
-                                    onChange={(e) => {
-                                        const [field, direction] = e.target.value.split('-');
-                                        setSortBy({ field, direction });
-                                        loadData();
-                                    }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                    <option value="updatedAt-desc">Recently Updated</option>
-                                    <option value="updatedAt-asc">Oldest First</option>
-                                    <option value="name-asc">Name A-Z</option>
-                                    <option value="name-desc">Name Z-A</option>
-                                    <option value="createdAt-desc">Recently Created</option>
-                                    <option value="createdAt-asc">Oldest Created</option>
-                                </select>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Content Grid */}
-                {currentItems.length === 0 ? (
-                    <EmptyState
-                        title={`No ${activeTab} found`}
-                        description={emptyText}
-                        icon={activeTab === 'classes' ? Sword : Shield}
-                        action={
-                            !searchTerm && !showFilters ? (
-                                activeTab === 'classes' ? (
-                                    <Link to="/character-creator/class/new">
-                                        <Button className="gap-2">
-                                            <Plus className="w-4 h-4" />
-                                            Create Your First Class
-                                        </Button>
-                                    </Link>
-                                ) : (
-                                    <Link to="/character-creator/subclass/new">
-                                        <Button className="gap-2">
-                                            <Plus className="w-4 h-4" />
-                                            Create Your First Subclass
-                                        </Button>
-                                    </Link>
-                                )
-                            ) : (
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setShowFilters(false);
-                                        loadData();
-                                    }}
-                                    className="gap-2"
-                                >
-                                    <X className="w-4 h-4" />
-                                    Clear Filters
-                                </Button>
-                            )
-                        }
+            {/* Search and Filters */}
+            <div style={{
+                display: 'flex',
+                gap: '16px',
+                marginBottom: '24px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+                    <Search
+                        style={{
+                            position: 'absolute',
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#9ca3af'
+                        }}
+                        size={20}
                     />
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {currentItems.map(item => (
-                            <Card key={item.id} className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
-                                                {item.name}
-                                            </h3>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                {activeTab === 'classes' ? (
-                                                    <>
-                                                        {item.hitDie && (
-                                                            <Badge variant="outline" className="gap-1">
-                                                                <Heart className="w-3 h-3" />
-                                                                d{item.hitDie}
-                                                            </Badge>
-                                                        )}
-                                                        {item.spellcasting?.enabled && (
-                                                            <Badge variant="secondary">
-                                                                Spellcaster
-                                                            </Badge>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <Badge variant="outline">
-                                                        {getClassById(item.parentClass)?.name || 'Unknown Class'}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleEdit(item)}
-                                                className="p-2"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardHeader>
+                    <input
+                        type="text"
+                        placeholder="Search classes by name or description..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '12px 12px 12px 44px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                            transition: 'all 0.2s'
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#dc2626';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    />
+                </div>
 
-                                <CardContent className="pt-0">
-                                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
-                                        {item.description || 'No description provided'}
-                                    </p>
+                <select
+                    value={filterDice}
+                    onChange={(e) => setFilterDice(e.target.value)}
+                    style={{
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                    }}
+                >
+                    <option value="all">All Hit Dice</option>
+                    <option value="d6">d6</option>
+                    <option value="d8">d8</option>
+                    <option value="d10">d10</option>
+                    <option value="d12">d12</option>
+                </select>
 
-                                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                                        <div className="flex items-center gap-1">
-                                            <Star className="w-3 h-3" />
-                                            {getFeaturesCount(item)} features
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {formatDate(item.updatedAt)}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleEdit(item)}
-                                            className="flex-1 gap-1"
-                                        >
-                                            <Edit className="w-3 h-3" />
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDuplicate(item)}
-                                            className="gap-1"
-                                        >
-                                            <Copy className="w-3 h-3" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleExport(item)}
-                                            className="gap-1"
-                                        >
-                                            <Download className="w-3 h-3" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDelete(item)}
-                                            className="gap-1 text-red-600 hover:text-red-700"
-                                        >
-                                            <Trash2 className="w-3 h-3" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                    }}
+                >
+                    <option value="name">Sort by Name</option>
+                    <option value="hitDie">Sort by Hit Die</option>
+                    <option value="recent">Sort by Recent</option>
+                </select>
             </div>
 
-            {/* Export Modal */}
-            {showExportModal && selectedItem && (
-                <ExportModal
-                    classData={selectedItem}
-                    onClose={() => {
-                        setShowExportModal(false);
-                        setSelectedItem(null);
-                    }}
-                />
+            {/* Results Count */}
+            {(searchTerm || filterDice !== 'all') && filteredClasses.length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                    padding: '12px 16px',
+                    background: '#f3f4f6',
+                    borderRadius: '8px'
+                }}>
+                    <span style={{ fontSize: '14px', color: '#374151' }}>
+                        Found {filteredClasses.length} class{filteredClasses.length !== 1 ? 'es' : ''}
+                    </span>
+                    {filteredClasses.length !== classes.length && (
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterDice('all');
+                            }}
+                            style={{
+                                fontSize: '14px',
+                                color: '#dc2626',
+                                fontWeight: '500',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                textDecoration: 'none'
+                            }}
+                            onMouseOver={(e) => e.target.style.color = '#b91c1c'}
+                            onMouseOut={(e) => e.target.style.color = '#dc2626'}
+                        >
+                            Clear filters
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Class Cards Grid */}
+            {filteredClasses.length === 0 ? (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '64px 16px',
+                    background: 'linear-gradient(to bottom right, #f9fafb, #f3f4f6)',
+                    borderRadius: '16px',
+                    border: '2px dashed #d1d5db'
+                }}>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '80px',
+                        height: '80px',
+                        background: '#fee2e2',
+                        borderRadius: '50%',
+                        marginBottom: '24px'
+                    }}>
+                        <Sword style={{ color: '#dc2626' }} size={40} />
+                    </div>
+                    <h3 style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: '12px'
+                    }}>
+                        {searchTerm || filterDice !== 'all' ? 'No classes found' : 'No classes yet'}
+                    </h3>
+                    <p style={{
+                        color: '#4b5563',
+                        marginBottom: '32px',
+                        maxWidth: '448px',
+                        margin: '0 auto 32px'
+                    }}>
+                        {searchTerm || filterDice !== 'all'
+                            ? 'Try adjusting your search or filters'
+                            : 'Create your first custom class to get started with your homebrew collection'}
+                    </p>
+                    {!searchTerm && filterDice === 'all' && (
+                        <Link
+                            to="/classes/create"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 24px',
+                                background: '#dc2626',
+                                color: 'white',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontWeight: '500',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+                            onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+                        >
+                            <Plus size={20} />
+                            Create First Class
+                        </Link>
+                    )}
+                </div>
+            ) : (
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                    gap: '24px'
+                }}>
+                    {filteredClasses.map((classData) => (
+                        <div
+                            key={classData.id}
+                            style={{
+                                background: 'white',
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s',
+                                cursor: 'pointer',
+                                border: '2px solid #e5e7eb'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                                e.currentTarget.style.borderColor = '#dc2626';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = '#e5e7eb';
+                            }}
+                        >
+                            {/* Card Header with Gradient */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+                                padding: '24px',
+                                color: 'white',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '128px',
+                                    height: '128px',
+                                    background: 'white',
+                                    opacity: 0.1,
+                                    borderRadius: '50%',
+                                    marginRight: '-64px',
+                                    marginTop: '-64px'
+                                }}></div>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    justifyContent: 'space-between',
+                                    gap: '16px',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            marginBottom: '8px',
+                                            margin: 0,
+                                            marginBottom: '8px'
+                                        }}>
+                                            {classData.name}
+                                        </h3>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            flexWrap: 'wrap'
+                                        }}>
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                backdropFilter: 'blur(10px)',
+                                                borderRadius: '9999px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                            }}>
+                                                <Heart size={12} />
+                                                Hit Die: {classData.hitDie}
+                                            </span>
+                                            {classData.spellcasting?.enabled && (
+                                                <span style={{
+                                                    padding: '4px 10px',
+                                                    background: 'rgba(147, 197, 253, 0.3)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    borderRadius: '9999px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    <Zap size={12} />
+                                                    Spellcaster
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Sword style={{ color: 'rgba(255, 255, 255, 0.8)', flexShrink: 0 }} size={32} />
+                                </div>
+                            </div>
+
+                            {/* Card Body */}
+                            <div style={{ padding: '24px' }}>
+                                <p style={{
+                                    color: '#374151',
+                                    fontSize: '14px',
+                                    lineHeight: '1.6',
+                                    marginBottom: '16px',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                }}>
+                                    {classData.description}
+                                </p>
+
+                                {/* Primary Ability */}
+                                {classData.primaryAbility && classData.primaryAbility.length > 0 && (
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            color: '#6b7280',
+                                            marginBottom: '8px',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}>
+                                            Primary Ability
+                                        </div>
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '8px'
+                                        }}>
+                                            {classData.primaryAbility.map((ability, i) => (
+                                                <span
+                                                    key={i}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        background: '#fee2e2',
+                                                        color: '#7f1d1d',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
+                                                    {ability}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Stats Row */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontSize: '14px',
+                                    color: '#4b5563',
+                                    padding: '12px 0',
+                                    borderTop: '1px solid #f3f4f6',
+                                    borderBottom: '1px solid #f3f4f6',
+                                    marginBottom: '16px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Target size={16} style={{ color: '#10b981' }} />
+                                        <span style={{ fontWeight: '500' }}>{getFeaturesCount(classData)}</span>
+                                        <span style={{ fontSize: '12px' }}>Features</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Shield size={16} style={{ color: '#6b7280' }} />
+                                        <span style={{ fontWeight: '500' }}>{classData.armorProficiencies?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Armor</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Sword size={16} style={{ color: '#f59e0b' }} />
+                                        <span style={{ fontWeight: '500' }}>{classData.weaponProficiencies?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Weapons</span>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '8px'
+                                }}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/classes/${classData.id}/edit`);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
+                                        title="Edit Class"
+                                    >
+                                        <Edit size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Edit</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDuplicate(classData.id);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#4b5563',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#374151'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#4b5563'}
+                                        title="Duplicate Class"
+                                    >
+                                        <Copy size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Copy</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(classData.id, classData.name);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#dc2626',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+                                        title="Delete Class"
+                                    >
+                                        <Trash2 size={16} />
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );

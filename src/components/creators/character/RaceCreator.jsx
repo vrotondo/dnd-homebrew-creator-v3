@@ -1,131 +1,159 @@
-// src/components/creators/character/RaceCreator.jsx - FINAL POLISHED VERSION
+// src/components/creators/character/BackgroundCreator.jsx - COMPLETE SIMPLIFIED VERSION
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { saveRace, getRaceById } from '../../../utils/storageService';
-import { ChevronLeft, ChevronRight, Check, Crown, AlertCircle } from 'lucide-react';
-import ExportModal from '../../export/ExportModal';
-import RacialTraits from './RacialTraits';
-import Subraces from './Subraces';
-import RacePreview from './RacePreview';
+import { saveBackground, getBackgroundById } from '../../../utils/storageService';
+import { ChevronLeft, ChevronRight, Check, BookOpen, AlertCircle } from 'lucide-react';
 
-function RaceCreator({ onSave, onCancel }) {
+// Simplified D&D 5e Skills
+const DND_SKILLS = [
+    'Acrobatics', 'Animal Handling', 'Arcana', 'Athletics', 'Deception',
+    'History', 'Insight', 'Intimidation', 'Investigation', 'Medicine',
+    'Nature', 'Perception', 'Performance', 'Persuasion', 'Religion',
+    'Sleight of Hand', 'Stealth', 'Survival'
+];
+
+const DND_TOOLS = [
+    'Alchemist\'s Supplies', 'Brewer\'s Supplies', 'Calligrapher\'s Supplies',
+    'Carpenter\'s Tools', 'Cartographer\'s Tools', 'Cobbler\'s Tools',
+    'Cook\'s Utensils', 'Glassblower\'s Tools', 'Jeweler\'s Tools',
+    'Leatherworker\'s Tools', 'Mason\'s Tools', 'Painter\'s Supplies',
+    'Potter\'s Tools', 'Smith\'s Tools', 'Tinker\'s Tools', 'Weaver\'s Tools',
+    'Woodcarver\'s Tools', 'Disguise Kit', 'Forgery Kit', 'Gaming Set',
+    'Herbalism Kit', 'Musical Instrument', 'Navigator\'s Tools', 'Poisoner\'s Kit',
+    'Thieves\' Tools', 'Vehicles (Land)', 'Vehicles (Water)'
+];
+
+function BackgroundCreator({ onSave, onCancel }) {
     const navigate = useNavigate();
     const { id } = useParams();
     const [currentStep, setCurrentStep] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
-    const [raceData, setRaceData] = useState({
+    const [backgroundData, setBackgroundData] = useState({
         name: '',
         description: '',
-        size: 'Medium',
-        speed: 30,
-        abilityScoreIncreases: { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 },
-        age: { maturity: '', lifespan: '' },
-        alignment: '',
+        skillProficiencies: [],
+        toolProficiencies: [],
         languages: ['Common'],
-        vision: { darkvision: false, range: 60 },
-        traits: [],
-        subraces: []
+        equipment: [],
+        feature: {
+            name: '',
+            description: ''
+        }
     });
 
     const [errors, setErrors] = useState({});
-    const [showExportModal, setShowExportModal] = useState(false);
 
     const steps = [
         { id: 1, name: 'Basic Info' },
-        { id: 2, name: 'Abilities' },
-        { id: 3, name: 'Languages' },
-        { id: 4, name: 'Traits' },
-        { id: 5, name: 'Subraces' },
-        { id: 6, name: 'Preview' }
+        { id: 2, name: 'Proficiencies' },
+        { id: 3, name: 'Feature' },
+        { id: 4, name: 'Equipment' },
+        { id: 5, name: 'Preview' }
     ];
 
-    // Load existing race if editing
     useEffect(() => {
         if (id) {
-            setIsLoading(true);
-            try {
-                console.log('Loading race with ID:', id);
-                const existingRace = getRaceById(id);
-
-                if (existingRace) {
-                    console.log('Race found:', existingRace);
-                    setRaceData(existingRace);
-                } else {
-                    console.error('Race not found with ID:', id);
-                    alert(`Race not found! ID: ${id}`);
-                    navigate('/races');
-                }
-            } catch (error) {
-                console.error('Error loading race:', error);
-                alert('Error loading race!');
-                navigate('/races');
-            } finally {
-                setIsLoading(false);
+            const existingBackground = getBackgroundById(id);
+            if (existingBackground) {
+                setBackgroundData(existingBackground);
             }
         }
-    }, [id, navigate]);
-
-    const updateRaceData = (updates) => {
-        setRaceData(prev => ({ ...prev, ...updates }));
-    };
+    }, [id]);
 
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        if (name.includes('.')) {
-            const [parent, child] = name.split('.');
-            updateRaceData({ [parent]: { ...raceData[parent], [child]: type === 'checkbox' ? checked : value } });
-        } else {
-            updateRaceData({ [name]: type === 'checkbox' ? checked : value });
+        const { name, value } = e.target;
+        setBackgroundData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
 
-    const handleAbilityChange = (ability, value) => {
-        const numValue = Math.max(0, Math.min(3, parseInt(value) || 0));
-        updateRaceData({ abilityScoreIncreases: { ...raceData.abilityScoreIncreases, [ability]: numValue } });
+    const handleSkillToggle = (skill) => {
+        setBackgroundData(prev => {
+            const skills = prev.skillProficiencies.includes(skill)
+                ? prev.skillProficiencies.filter(s => s !== skill)
+                : [...prev.skillProficiencies, skill];
+            return { ...prev, skillProficiencies: skills };
+        });
     };
 
-    const handleLanguageChange = (language, checked) => {
-        if (checked) {
-            updateRaceData({ languages: [...raceData.languages, language] });
-        } else {
-            updateRaceData({ languages: raceData.languages.filter(l => l !== language) });
-        }
+    const handleToolToggle = (tool) => {
+        setBackgroundData(prev => {
+            const tools = prev.toolProficiencies.includes(tool)
+                ? prev.toolProficiencies.filter(t => t !== tool)
+                : [...prev.toolProficiencies, tool];
+            return { ...prev, toolProficiencies: tools };
+        });
     };
 
-    const canProceedToNextStep = () => {
+    const handleLanguageChange = (index, value) => {
+        setBackgroundData(prev => {
+            const languages = [...prev.languages];
+            languages[index] = value;
+            return { ...prev, languages };
+        });
+    };
+
+    const addLanguage = () => {
+        setBackgroundData(prev => ({
+            ...prev,
+            languages: [...prev.languages, '']
+        }));
+    };
+
+    const removeLanguage = (index) => {
+        setBackgroundData(prev => ({
+            ...prev,
+            languages: prev.languages.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleEquipmentChange = (index, value) => {
+        setBackgroundData(prev => {
+            const equipment = [...prev.equipment];
+            equipment[index] = value;
+            return { ...prev, equipment };
+        });
+    };
+
+    const addEquipment = () => {
+        setBackgroundData(prev => ({
+            ...prev,
+            equipment: [...prev.equipment, '']
+        }));
+    };
+
+    const removeEquipment = (index) => {
+        setBackgroundData(prev => ({
+            ...prev,
+            equipment: prev.equipment.filter((_, i) => i !== index)
+        }));
+    };
+
+    const validate = () => {
+        const newErrors = {};
+
         if (currentStep === 1) {
-            return raceData.name.trim() && raceData.description.trim() && raceData.description.length >= 20;
+            if (!backgroundData.name.trim()) newErrors.name = 'Name is required';
+            if (!backgroundData.description.trim()) newErrors.description = 'Description is required';
+            else if (backgroundData.description.length < 20) newErrors.description = 'Description must be at least 20 characters';
         }
+
         if (currentStep === 2) {
-            const total = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-            return total >= 1 && total <= 3;
+            if (backgroundData.skillProficiencies.length === 0) newErrors.skills = 'Select at least one skill proficiency';
         }
+
         if (currentStep === 3) {
-            return raceData.languages.length > 0;
+            if (!backgroundData.feature.name.trim()) newErrors.featureName = 'Feature name is required';
+            if (!backgroundData.feature.description.trim()) newErrors.featureDescription = 'Feature description is required';
         }
-        return true;
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const nextStep = () => {
-        if (canProceedToNextStep() && currentStep < steps.length) {
+        if (validate()) {
             setCurrentStep(currentStep + 1);
-            setErrors({});
-        } else {
-            const newErrors = {};
-            if (currentStep === 1) {
-                if (!raceData.name.trim()) newErrors.name = 'Race name is required';
-                if (!raceData.description.trim()) newErrors.description = 'Description is required';
-                else if (raceData.description.length < 20) newErrors.description = 'Minimum 20 characters';
-            }
-            if (currentStep === 2) {
-                const total = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-                if (total < 1) newErrors.abilities = 'At least 1 point required';
-                if (total > 3) newErrors.abilities = 'Maximum 3 points allowed';
-            }
-            if (currentStep === 3) {
-                if (raceData.languages.length === 0) newErrors.languages = 'At least one language required';
-            }
-            setErrors(newErrors);
         }
     };
 
@@ -138,450 +166,566 @@ function RaceCreator({ onSave, onCancel }) {
 
     const handleSave = () => {
         try {
-            const savedId = saveRace(raceData);
-            alert(`✅ Race "${raceData.name}" saved successfully!`);
-            navigate('/races');
+            const savedId = saveBackground(backgroundData);
+            if (onSave) {
+                onSave(savedId);
+            } else {
+                navigate('/backgrounds');
+            }
         } catch (error) {
-            console.error('Error saving race:', error);
-            alert('❌ Error saving race!');
+            console.error('Error saving background:', error);
+            alert('Error saving background. Please try again.');
         }
     };
 
-    if (isLoading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTopColor: '#8b5cf6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-                    <p style={{ fontSize: '16px', color: '#6b7280' }}>Loading race...</p>
-                </div>
-            </div>
-        );
-    }
-
     const renderStepContent = () => {
-        const inputStyle = {
-            width: '100%',
-            padding: '14px 16px',
-            border: '2px solid #e5e7eb',
-            borderRadius: '10px',
-            fontSize: '16px',
-            transition: 'all 0.2s',
-            outline: 'none',
-            backgroundColor: 'white',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        };
-
-        const labelStyle = {
-            display: 'block',
-            fontWeight: '600',
-            marginBottom: '10px',
-            fontSize: '15px',
-            color: '#374151'
-        };
-
         switch (currentStep) {
-            case 1:
+            case 1: // Basic Info
                 return (
-                    <div style={{ padding: '40px' }}>
-                        <div style={{ marginBottom: '28px' }}>
-                            <label style={labelStyle}>Race Name *</label>
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
+                            Basic Information
+                        </h3>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px', color: '#374151' }}>
+                                Background Name *
+                            </label>
                             <input
                                 type="text"
                                 name="name"
-                                value={raceData.name}
+                                value={backgroundData.name}
                                 onChange={handleInputChange}
+                                placeholder="e.g., Guild Artisan, Folk Hero, Sage"
                                 style={{
-                                    ...inputStyle,
-                                    borderColor: errors.name ? '#ef4444' : '#e5e7eb'
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.name ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    outline: 'none',
+                                    transition: 'all 0.2s'
                                 }}
-                                onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                onBlur={(e) => e.target.style.borderColor = errors.name ? '#ef4444' : '#e5e7eb'}
-                                placeholder="e.g., Dragonborn, High Elf, Mountain Dwarf"
+                                onFocus={(e) => {
+                                    if (!errors.name) {
+                                        e.target.style.borderColor = '#3b82f6';
+                                        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    if (!errors.name) {
+                                        e.target.style.borderColor = '#d1d5db';
+                                        e.target.style.boxShadow = 'none';
+                                    }
+                                }}
                             />
                             {errors.name && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#ef4444', fontSize: '14px' }}>
-                                    <AlertCircle size={16} />
-                                    {errors.name}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
+                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.name}</p>
                                 </div>
                             )}
                         </div>
 
-                        <div style={{ marginBottom: '28px' }}>
-                            <label style={labelStyle}>Description *</label>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px', color: '#374151' }}>
+                                Description *
+                            </label>
                             <textarea
                                 name="description"
-                                value={raceData.description}
+                                value={backgroundData.description}
                                 onChange={handleInputChange}
-                                rows={5}
+                                placeholder="Describe the background's history, typical members, and their place in society..."
+                                rows={6}
                                 style={{
-                                    ...inputStyle,
-                                    borderColor: errors.description ? '#ef4444' : '#e5e7eb',
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    outline: 'none',
                                     fontFamily: 'inherit',
-                                    lineHeight: '1.6',
-                                    resize: 'vertical'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                onBlur={(e) => e.target.style.borderColor = errors.description ? '#ef4444' : '#e5e7eb'}
-                                placeholder="Describe the race's appearance, culture, characteristics, and place in the world..."
-                            />
-                            {errors.description && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#ef4444', fontSize: '14px' }}>
-                                    <AlertCircle size={16} />
-                                    {errors.description}
-                                </div>
-                            )}
-                            <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280' }}>
-                                <span>{raceData.description.length}/20 characters minimum</span>
-                                <span style={{ color: raceData.description.length >= 20 ? '#10b981' : '#ef4444' }}>
-                                    {raceData.description.length >= 20 ? '✓ Good' : '⚠ Too short'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-                            <div>
-                                <label style={labelStyle}>Size</label>
-                                <select
-                                    name="size"
-                                    value={raceData.size}
-                                    onChange={handleInputChange}
-                                    style={{ ...inputStyle, cursor: 'pointer' }}
-                                >
-                                    <option value="Small">Small (3-4 feet)</option>
-                                    <option value="Medium">Medium (4-8 feet)</option>
-                                    <option value="Large">Large (8+ feet)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label style={labelStyle}>Speed (feet per turn)</label>
-                                <input
-                                    type="number"
-                                    name="speed"
-                                    value={raceData.speed}
-                                    onChange={handleInputChange}
-                                    min="10"
-                                    max="60"
-                                    step="5"
-                                    style={inputStyle}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: '28px' }}>
-                            <label style={labelStyle}>Age & Lifespan</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                <input
-                                    type="text"
-                                    name="age.maturity"
-                                    value={raceData.age.maturity}
-                                    onChange={handleInputChange}
-                                    placeholder="e.g., Matures at age 18"
-                                    style={inputStyle}
-                                />
-                                <input
-                                    type="text"
-                                    name="age.lifespan"
-                                    value={raceData.age.lifespan}
-                                    onChange={handleInputChange}
-                                    placeholder="e.g., Lives about 80 years"
-                                    style={inputStyle}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: '28px' }}>
-                            <label style={labelStyle}>Alignment (Optional)</label>
-                            <input
-                                type="text"
-                                name="alignment"
-                                value={raceData.alignment}
-                                onChange={handleInputChange}
-                                placeholder="e.g., Usually chaotic good, tends toward neutrality"
-                                style={inputStyle}
-                            />
-                        </div>
-
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '16px',
-                            padding: '20px',
-                            backgroundColor: '#f9fafb',
-                            borderRadius: '12px',
-                            border: '2px solid #e5e7eb'
-                        }}>
-                            <input
-                                type="checkbox"
-                                name="vision.darkvision"
-                                checked={raceData.vision.darkvision}
-                                onChange={handleInputChange}
-                                style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: '#8b5cf6' }}
-                                id="darkvision-check"
-                            />
-                            <label htmlFor="darkvision-check" style={{ fontWeight: '600', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
-                                Has Darkvision
-                            </label>
-                            {raceData.vision.darkvision && (
-                                <>
-                                    <input
-                                        type="number"
-                                        name="vision.range"
-                                        value={raceData.vision.range}
-                                        onChange={handleInputChange}
-                                        min="30"
-                                        max="120"
-                                        step="30"
-                                        style={{
-                                            width: '100px',
-                                            padding: '10px',
-                                            border: '2px solid #d1d5db',
-                                            borderRadius: '8px',
-                                            fontSize: '15px',
-                                            fontWeight: '600',
-                                            textAlign: 'center'
-                                        }}
-                                    />
-                                    <span style={{ fontSize: '15px', color: '#6b7280', fontWeight: '500' }}>feet</span>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                );
-
-            case 2:
-                const abilities = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
-                const abilityNames = {
-                    STR: 'Strength', DEX: 'Dexterity', CON: 'Constitution',
-                    INT: 'Intelligence', WIS: 'Wisdom', CHA: 'Charisma'
-                };
-                const total = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
-
-                return (
-                    <div style={{ padding: '40px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
-                            Ability Score Increases
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
-                            Most races get +2 to one ability and +1 to another (total: 3), or +1 to two abilities (total: 2).
-                        </p>
-
-                        {errors.abilities && (
-                            <div style={{
-                                padding: '16px',
-                                backgroundColor: '#fee2e2',
-                                border: '2px solid #ef4444',
-                                borderRadius: '12px',
-                                marginBottom: '24px',
-                                color: '#dc2626',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}>
-                                <AlertCircle size={20} />
-                                {errors.abilities}
-                            </div>
-                        )}
-
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '20px',
-                            marginBottom: '28px'
-                        }}>
-                            {abilities.map(ability => (
-                                <div key={ability} style={{
-                                    padding: '20px',
-                                    border: '2px solid #e5e7eb',
-                                    borderRadius: '14px',
-                                    backgroundColor: 'white',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    resize: 'vertical',
                                     transition: 'all 0.2s'
-                                }}>
-                                    <div style={{ marginBottom: '12px' }}>
-                                        <div style={{ fontWeight: '700', fontSize: '18px', color: '#111827' }}>{ability}</div>
-                                        <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '2px' }}>{abilityNames[ability]}</div>
+                                }}
+                                onFocus={(e) => {
+                                    if (!errors.description) {
+                                        e.target.style.borderColor = '#3b82f6';
+                                        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    if (!errors.description) {
+                                        e.target.style.borderColor = '#d1d5db';
+                                        e.target.style.boxShadow = 'none';
+                                    }
+                                }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                                {errors.description ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <AlertCircle size={14} style={{ color: '#ef4444' }} />
+                                        <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.description}</p>
                                     </div>
-                                    <select
-                                        value={raceData.abilityScoreIncreases[ability]}
-                                        onChange={(e) => handleAbilityChange(ability, e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            border: '2px solid #d1d5db',
-                                            borderRadius: '10px',
-                                            fontSize: '17px',
-                                            fontWeight: '700',
-                                            textAlign: 'center',
-                                            backgroundColor: 'white',
-                                            cursor: 'pointer',
-                                            accentColor: '#8b5cf6'
-                                        }}
-                                    >
-                                        <option value={0}>+0</option>
-                                        <option value={1}>+1</option>
-                                        <option value={2}>+2</option>
-                                        <option value={3}>+3</option>
-                                    </select>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div style={{
-                            padding: '24px',
-                            backgroundColor: total >= 1 && total <= 3 ? '#d1fae5' : '#fee2e2',
-                            borderRadius: '14px',
-                            border: `3px solid ${total >= 1 && total <= 3 ? '#10b981' : '#ef4444'}`
-                        }}>
-                            <p style={{ fontSize: '18px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span>Total Ability Score Increases: <span style={{ fontSize: '22px' }}>+{total}</span></span>
-                                {total < 1 && <span style={{ color: '#dc2626' }}>⚠ Too few points</span>}
-                                {total > 3 && <span style={{ color: '#dc2626' }}>⚠ Too many points</span>}
-                                {(total >= 1 && total <= 3) && <span style={{ color: '#059669' }}>✓ Perfect!</span>}
-                            </p>
-                        </div>
-                    </div>
-                );
-
-            case 3:
-                const languages = [
-                    'Common', 'Dwarvish', 'Elvish', 'Giant', 'Gnomish', 'Goblin',
-                    'Halfling', 'Orc', 'Abyssal', 'Celestial', 'Draconic', 'Deep Speech',
-                    'Infernal', 'Primordial', 'Sylvan', 'Undercommon'
-                ];
-
-                return (
-                    <div style={{ padding: '40px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
-                            Languages
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
-                            Select which languages members of this race can speak, read, and write.
-                        </p>
-
-                        {errors.languages && (
-                            <div style={{
-                                padding: '16px',
-                                backgroundColor: '#fee2e2',
-                                border: '2px solid #ef4444',
-                                borderRadius: '12px',
-                                marginBottom: '24px',
-                                color: '#dc2626',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}>
-                                <AlertCircle size={20} />
-                                {errors.languages}
-                            </div>
-                        )}
-
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                            gap: '16px',
-                            marginBottom: '28px'
-                        }}>
-                            {languages.map(language => (
-                                <label key={language} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    padding: '16px',
-                                    border: raceData.languages.includes(language) ? '3px solid #8b5cf6' : '2px solid #e5e7eb',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    backgroundColor: raceData.languages.includes(language) ? '#f5f3ff' : 'white',
-                                    transition: 'all 0.2s',
-                                    boxShadow: raceData.languages.includes(language) ? '0 4px 6px rgba(139, 92, 246, 0.2)' : '0 1px 3px rgba(0,0,0,0.05)'
-                                }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={raceData.languages.includes(language)}
-                                        onChange={(e) => handleLanguageChange(language, e.target.checked)}
-                                        style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: '#8b5cf6' }}
-                                    />
-                                    <span style={{
-                                        fontSize: '15px',
-                                        fontWeight: raceData.languages.includes(language) ? '700' : '500',
-                                        color: raceData.languages.includes(language) ? '#5b21b6' : '#374151'
-                                    }}>
-                                        {language}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
-
-                        {raceData.languages.length > 0 && (
-                            <div style={{
-                                padding: '24px',
-                                backgroundColor: '#dbeafe',
-                                borderRadius: '14px',
-                                border: '3px solid #3b82f6'
-                            }}>
-                                <p style={{ fontSize: '17px', fontWeight: '700', margin: 0 }}>
-                                    Selected ({raceData.languages.length}): {raceData.languages.join(', ')}
+                                ) : (
+                                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                                        Minimum 20 characters
+                                    </p>
+                                )}
+                                <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                                    {backgroundData.description.length} characters
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                );
+
+            case 2: // Proficiencies
+                return (
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
+                            Proficiencies & Languages
+                        </h3>
+
+                        {/* Skill Proficiencies */}
+                        <div style={{ marginBottom: '32px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '12px', fontSize: '16px', color: '#374151' }}>
+                                Skill Proficiencies *
+                            </label>
+                            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>
+                                Select 2 skill proficiencies for this background
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                                {DND_SKILLS.map(skill => (
+                                    <div
+                                        key={skill}
+                                        onClick={() => handleSkillToggle(skill)}
+                                        style={{
+                                            padding: '12px 16px',
+                                            border: backgroundData.skillProficiencies.includes(skill) ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            background: backgroundData.skillProficiencies.includes(skill) ? '#eff6ff' : 'white',
+                                            transition: 'all 0.2s',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.boxShadow = 'none';
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '4px',
+                                            border: '2px solid ' + (backgroundData.skillProficiencies.includes(skill) ? '#3b82f6' : '#d1d5db'),
+                                            background: backgroundData.skillProficiencies.includes(skill) ? '#3b82f6' : 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '12px'
+                                        }}>
+                                            {backgroundData.skillProficiencies.includes(skill) && '✓'}
+                                        </div>
+                                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>{skill}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            {errors.skills && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
+                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
+                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.skills}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Tool Proficiencies */}
+                        <div style={{ marginBottom: '32px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '12px', fontSize: '16px', color: '#374151' }}>
+                                Tool Proficiencies (Optional)
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                                {DND_TOOLS.slice(0, 12).map(tool => (
+                                    <div
+                                        key={tool}
+                                        onClick={() => handleToolToggle(tool)}
+                                        style={{
+                                            padding: '12px 16px',
+                                            border: backgroundData.toolProficiencies.includes(tool) ? '2px solid #10b981' : '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            background: backgroundData.toolProficiencies.includes(tool) ? '#d1fae5' : 'white',
+                                            transition: 'all 0.2s',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.boxShadow = 'none';
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '4px',
+                                            border: '2px solid ' + (backgroundData.toolProficiencies.includes(tool) ? '#10b981' : '#d1d5db'),
+                                            background: backgroundData.toolProficiencies.includes(tool) ? '#10b981' : 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '12px'
+                                        }}>
+                                            {backgroundData.toolProficiencies.includes(tool) && '✓'}
+                                        </div>
+                                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>{tool}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Languages */}
+                        <div>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '12px', fontSize: '16px', color: '#374151' }}>
+                                Languages
+                            </label>
+                            {backgroundData.languages.map((lang, index) => (
+                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                    <input
+                                        type="text"
+                                        value={lang}
+                                        onChange={(e) => handleLanguageChange(index, e.target.value)}
+                                        placeholder="e.g., Elvish, Dwarvish"
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                    {index > 0 && (
+                                        <button
+                                            onClick={() => removeLanguage(index)}
+                                            style={{
+                                                padding: '12px 16px',
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontWeight: '500'
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <button
+                                onClick={addLanguage}
+                                style={{
+                                    padding: '12px 24px',
+                                    background: '#f3f4f6',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontWeight: '500',
+                                    color: '#374151'
+                                }}
+                            >
+                                + Add Language
+                            </button>
+                        </div>
+                    </div>
+                );
+
+            case 3: // Feature
+                return (
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
+                            Background Feature
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Every background provides a unique feature that gives special abilities or benefits in specific situations.
+                        </p>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px', color: '#374151' }}>
+                                Feature Name *
+                            </label>
+                            <input
+                                type="text"
+                                value={backgroundData.feature.name}
+                                onChange={(e) => setBackgroundData(prev => ({
+                                    ...prev,
+                                    feature: { ...prev.feature, name: e.target.value }
+                                }))}
+                                placeholder="e.g., Guild Membership, By Popular Demand"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.featureName ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    outline: 'none'
+                                }}
+                            />
+                            {errors.featureName && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
+                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.featureName}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px', color: '#374151' }}>
+                                Feature Description *
+                            </label>
+                            <textarea
+                                value={backgroundData.feature.description}
+                                onChange={(e) => setBackgroundData(prev => ({
+                                    ...prev,
+                                    feature: { ...prev.feature, description: e.target.value }
+                                }))}
+                                placeholder="Describe what this feature does and how it benefits the character..."
+                                rows={8}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: errors.featureDescription ? '2px solid #ef4444' : '1px solid #d1d5db',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    outline: 'none',
+                                    fontFamily: 'inherit',
+                                    resize: 'vertical'
+                                }}
+                            />
+                            {errors.featureDescription && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
+                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.featureDescription}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 4: // Equipment
+                return (
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
+                            Starting Equipment
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                            Define the equipment a character with this background starts with (optional).
+                        </p>
+
+                        {backgroundData.equipment.length === 0 ? (
+                            <div style={{
+                                padding: '48px',
+                                border: '2px dashed #d1d5db',
+                                borderRadius: '12px',
+                                textAlign: 'center'
+                            }}>
+                                <p style={{ color: '#6b7280', marginBottom: '16px' }}>No equipment added yet</p>
+                                <button
+                                    onClick={addEquipment}
+                                    style={{
+                                        padding: '12px 24px',
+                                        background: '#3b82f6',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '500'
+                                    }}
+                                >
+                                    + Add Equipment Item
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                {backgroundData.equipment.map((item, index) => (
+                                    <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                        <input
+                                            type="text"
+                                            value={item}
+                                            onChange={(e) => handleEquipmentChange(index, e.target.value)}
+                                            placeholder="e.g., A set of artisan's tools, A letter of introduction from your guild"
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '8px',
+                                                fontSize: '14px'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => removeEquipment(index)}
+                                            style={{
+                                                padding: '12px 16px',
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontWeight: '500'
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={addEquipment}
+                                    style={{
+                                        padding: '12px 24px',
+                                        background: '#f3f4f6',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '500',
+                                        color: '#374151',
+                                        marginTop: '8px'
+                                    }}
+                                >
+                                    + Add Another Item
+                                </button>
+                            </>
                         )}
                     </div>
                 );
 
-            case 4:
+            case 5: // Preview
                 return (
-                    <div style={{ padding: '40px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
-                            Racial Traits (Optional)
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
+                            Background Preview
                         </h3>
-                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
-                            Add unique abilities, resistances, or features that define this race.
-                        </p>
-                        <RacialTraits raceData={raceData} updateRaceData={updateRaceData} />
-                    </div>
-                );
 
-            case 5:
-                return (
-                    <div style={{ padding: '40px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
-                            Subraces (Optional)
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
-                            Add subraces to provide variants of your main race with additional features.
-                        </p>
-                        <Subraces raceData={raceData} updateRaceData={updateRaceData} />
-                    </div>
-                );
-
-            case 6:
-                return (
-                    <div style={{ padding: '40px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-                            <h3 style={{ fontSize: '22px', fontWeight: '700', margin: 0, color: '#111827' }}>
-                                Race Preview
-                            </h3>
-                            <button
-                                onClick={() => setShowExportModal(true)}
-                                style={{
-                                    padding: '14px 28px',
-                                    backgroundColor: '#6b7280',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '10px',
-                                    fontWeight: '600',
-                                    fontSize: '15px',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                }}
-                            >
-                                Export
-                            </button>
+                        {/* Preview Card */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                            borderRadius: '16px',
+                            padding: '32px',
+                            color: 'white',
+                            marginBottom: '24px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                                <BookOpen size={40} />
+                                <h2 style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>{backgroundData.name}</h2>
+                            </div>
+                            <p style={{ fontSize: '16px', lineHeight: '1.6', opacity: 0.9 }}>{backgroundData.description}</p>
                         </div>
-                        <RacePreview raceData={raceData} />
-                        {showExportModal && (
-                            <ExportModal classData={raceData} onClose={() => setShowExportModal(false)} />
+
+                        {/* Details Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                            {/* Skills */}
+                            <div style={{
+                                background: '#f9fafb',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                border: '1px solid #e5e7eb'
+                            }}>
+                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>
+                                    Skill Proficiencies
+                                </h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                    {backgroundData.skillProficiencies.map((skill, i) => (
+                                        <span
+                                            key={i}
+                                            style={{
+                                                padding: '6px 12px',
+                                                background: '#dbeafe',
+                                                color: '#1e40af',
+                                                borderRadius: '9999px',
+                                                fontSize: '14px',
+                                                fontWeight: '500'
+                                            }}
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Tools */}
+                            {backgroundData.toolProficiencies.length > 0 && (
+                                <div style={{
+                                    background: '#f9fafb',
+                                    padding: '24px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #e5e7eb'
+                                }}>
+                                    <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>
+                                        Tool Proficiencies
+                                    </h4>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {backgroundData.toolProficiencies.map((tool, i) => (
+                                            <span
+                                                key={i}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    background: '#d1fae5',
+                                                    color: '#065f46',
+                                                    borderRadius: '9999px',
+                                                    fontSize: '14px',
+                                                    fontWeight: '500'
+                                                }}
+                                            >
+                                                {tool}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Feature */}
+                        <div style={{
+                            background: '#fef3c7',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            border: '2px solid #fbbf24',
+                            marginBottom: '24px'
+                        }}>
+                            <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#92400e' }}>
+                                Feature: {backgroundData.feature.name}
+                            </h4>
+                            <p style={{ fontSize: '14px', color: '#78350f', lineHeight: '1.6' }}>
+                                {backgroundData.feature.description}
+                            </p>
+                        </div>
+
+                        {/* Equipment */}
+                        {backgroundData.equipment.length > 0 && (
+                            <div style={{
+                                background: '#f9fafb',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                border: '1px solid #e5e7eb'
+                            }}>
+                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>
+                                    Starting Equipment
+                                </h4>
+                                <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                                    {backgroundData.equipment.map((item, i) => (
+                                        <li key={i} style={{ fontSize: '14px', color: '#374151', marginBottom: '8px' }}>
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         )}
                     </div>
                 );
@@ -592,227 +736,168 @@ function RaceCreator({ onSave, onCancel }) {
     };
 
     return (
-        <div style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '24px',
-            backgroundColor: '#f9fafb',
-            minHeight: '100vh'
-        }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
             {/* Header */}
-            <div style={{
-                marginBottom: '32px',
-                padding: '32px',
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-                borderRadius: '20px',
-                boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)',
-                color: 'white'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                        padding: '12px',
-                        backgroundColor: 'rgba(255,255,255,0.2)',
-                        borderRadius: '12px',
-                        backdropFilter: 'blur(10px)'
-                    }}>
-                        <Crown size={40} />
-                    </div>
-                    <div>
-                        <h1 style={{ fontSize: '36px', fontWeight: 'bold', margin: 0 }}>
-                            {id ? 'Edit Race' : 'Create New Race'}
-                        </h1>
-                        <p style={{ fontSize: '16px', margin: 0, opacity: 0.9 }}>
-                            Design a custom race with unique traits and abilities
-                        </p>
-                    </div>
-                </div>
+            <div style={{ marginBottom: '32px' }}>
+                <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
+                    {id ? 'Edit Background' : 'Create Background'}
+                </h1>
+                <p style={{ color: '#6b7280', fontSize: '16px' }}>
+                    Design a custom background with skills, equipment, and features
+                </p>
             </div>
 
             {/* Step Navigation */}
             <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 marginBottom: '32px',
-                padding: '40px',
-                backgroundColor: 'white',
-                borderRadius: '20px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                border: '2px solid #e5e7eb'
+                padding: '24px',
+                background: '#f9fafb',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                overflowX: 'auto'
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {steps.map((step, index) => {
-                        const isActive = currentStep === step.id;
-                        const isCompleted = currentStep > step.id;
-                        return (
-                            <div key={step.id} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                                <button
-                                    onClick={() => setCurrentStep(step.id)}
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: '12px',
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        padding: '8px',
-                                        transition: 'all 0.3s'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '64px',
-                                        height: '64px',
-                                        borderRadius: '50%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '24px',
-                                        fontWeight: '700',
-                                        backgroundColor: isActive ? '#8b5cf6' : isCompleted ? '#10b981' : '#e5e7eb',
-                                        color: isActive || isCompleted ? 'white' : '#6b7280',
-                                        border: isActive ? '5px solid #c4b5fd' : '5px solid transparent',
-                                        boxShadow: isActive ? '0 8px 25px rgba(139, 92, 246, 0.5)' : isCompleted ? '0 8px 25px rgba(16, 185, 129, 0.5)' : 'none',
-                                        transform: isActive ? 'scale(1.15)' : 'scale(1)',
-                                        transition: 'all 0.3s'
-                                    }}>
-                                        {isCompleted ? '✓' : step.id}
-                                    </div>
-                                    <span style={{
-                                        fontSize: '14px',
-                                        fontWeight: '700',
-                                        color: isActive ? '#8b5cf6' : isCompleted ? '#10b981' : '#6b7280',
-                                        textAlign: 'center'
-                                    }}>
-                                        {step.name}
-                                    </span>
-                                </button>
-                                {index < steps.length - 1 && (
-                                    <div style={{
-                                        flex: 1,
-                                        height: '5px',
-                                        backgroundColor: isCompleted ? '#10b981' : '#e5e7eb',
-                                        borderRadius: '3px',
-                                        marginTop: '-30px',
-                                        transition: 'all 0.3s'
-                                    }} />
-                                )}
+                {steps.map((step, index) => (
+                    <div key={step.id} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                background: currentStep === step.id ? '#3b82f6' : currentStep > step.id ? '#10b981' : '#e5e7eb',
+                                color: currentStep >= step.id ? 'white' : '#6b7280',
+                                border: currentStep === step.id ? '3px solid #93c5fd' : 'none'
+                            }}>
+                                {currentStep > step.id ? '✓' : step.id}
                             </div>
-                        );
-                    })}
-                </div>
+                            <span style={{
+                                fontSize: '14px',
+                                fontWeight: currentStep === step.id ? '600' : '400',
+                                color: currentStep === step.id ? '#1e40af' : '#6b7280',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                {step.name}
+                            </span>
+                        </div>
+                        {index < steps.length - 1 && (
+                            <div style={{
+                                flex: 1,
+                                height: '2px',
+                                background: currentStep > step.id ? '#10b981' : '#e5e7eb',
+                                margin: '0 16px',
+                                minWidth: '20px'
+                            }} />
+                        )}
+                    </div>
+                ))}
             </div>
 
-            {/* Content */}
+            {/* Step Content */}
             <div style={{
-                backgroundColor: 'white',
-                borderRadius: '20px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                marginBottom: '32px',
-                minHeight: '500px'
+                background: 'white',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                marginBottom: '24px',
+                minHeight: '400px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
             }}>
                 {renderStepContent()}
             </div>
 
             {/* Navigation Buttons */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '24px',
-                backgroundColor: 'white',
-                borderRadius: '20px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button
                     onClick={prevStep}
                     disabled={currentStep === 1}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px',
-                        padding: '16px 32px',
-                        backgroundColor: currentStep === 1 ? '#f3f4f6' : '#6b7280',
+                        gap: '8px',
+                        padding: '12px 24px',
+                        background: currentStep === 1 ? '#f3f4f6' : '#6b7280',
                         color: currentStep === 1 ? '#9ca3af' : 'white',
                         border: 'none',
-                        borderRadius: '12px',
-                        fontWeight: '700',
+                        borderRadius: '8px',
+                        fontWeight: '500',
                         fontSize: '16px',
                         cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
-                        boxShadow: currentStep === 1 ? 'none' : '0 4px 6px rgba(0,0,0,0.1)',
-                        transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => {
-                        if (currentStep !== 1) e.target.style.transform = 'translateY(-2px)';
-                    }}
-                    onMouseOut={(e) => {
-                        if (currentStep !== 1) e.target.style.transform = 'translateY(0)';
+                        opacity: currentStep === 1 ? 0.5 : 1
                     }}
                 >
                     <ChevronLeft size={20} />
                     Previous
                 </button>
 
-                {currentStep < steps.length ? (
+                <div style={{ display: 'flex', gap: '12px' }}>
                     <button
-                        onClick={nextStep}
+                        onClick={onCancel || (() => navigate('/backgrounds'))}
                         style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '16px 40px',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontWeight: '700',
-                            fontSize: '18px',
-                            cursor: 'pointer',
-                            boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 12px 25px rgba(59, 130, 246, 0.5)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.4)';
+                            padding: '12px 24px',
+                            border: '2px solid #d1d5db',
+                            background: 'white',
+                            color: '#374151',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            fontSize: '16px',
+                            cursor: 'pointer'
                         }}
                     >
-                        Next
-                        <ChevronRight size={20} />
+                        Cancel
                     </button>
-                ) : (
-                    <button
-                        onClick={handleSave}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '16px 40px',
-                            backgroundColor: '#10b981',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontWeight: '700',
-                            fontSize: '18px',
-                            cursor: 'pointer',
-                            boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 12px 25px rgba(16, 185, 129, 0.5)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.4)';
-                        }}
-                    >
-                        <Check size={20} />
-                        Save Race
-                    </button>
-                )}
+
+                    {currentStep < steps.length ? (
+                        <button
+                            onClick={nextStep}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 32px',
+                                background: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 6px rgba(59, 130, 246, 0.3)'
+                            }}
+                        >
+                            Next
+                            <ChevronRight size={20} />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSave}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 32px',
+                                background: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)'
+                            }}
+                        >
+                            <Check size={20} />
+                            Save Background
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
 
-export default RaceCreator;
+export default BackgroundCreator;

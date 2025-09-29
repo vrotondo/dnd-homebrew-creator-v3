@@ -1,4 +1,4 @@
-// src/pages/BackgroundManager.jsx
+// src/pages/BackgroundManager.jsx - FIXED VERSION
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getBackgrounds, deleteBackground, duplicateBackground } from '../utils/storageService';
@@ -9,15 +9,9 @@ import {
     Edit,
     Trash2,
     Copy,
-    Eye,
-    Filter,
-    Download,
-    Upload,
-    Award,
-    Briefcase,
     Target,
-    Package,
-    TrendingUp
+    Briefcase,
+    Package
 } from 'lucide-react';
 
 function BackgroundManager() {
@@ -90,34 +84,80 @@ function BackgroundManager() {
         totalTools: backgrounds.reduce((sum, bg) => sum + (bg.toolProficiencies?.length || 0), 0),
         withFeatures: backgrounds.filter(bg => bg.feature?.name).length,
         totalEquipment: backgrounds.reduce((sum, bg) => sum + (bg.equipment?.length || 0), 0),
-        avgSkills: backgrounds.length > 0 ? (backgrounds.reduce((sum, bg) => sum + (bg.skillProficiencies?.length || 0), 0) / backgrounds.length).toFixed(1) : 0
+        avgSkills: backgrounds.length > 0 ?
+            (backgrounds.reduce((sum, bg) => sum + (bg.skillProficiencies?.length || 0), 0) / backgrounds.length).toFixed(1) : 0
     };
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-xl font-medium text-gray-700">Loading your backgrounds...</p>
-                    <p className="text-sm text-gray-500 mt-2">Gathering all your custom creations</p>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        border: '4px solid #f3f4f6',
+                        borderTopColor: '#3b82f6',
+                        borderRadius: '50%',
+                        margin: '0 auto 16px',
+                        animation: 'spin 1s linear infinite'
+                    }}></div>
+                    <p style={{ fontSize: '20px', fontWeight: '500', color: '#374151' }}>
+                        Loading your backgrounds...
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                        Gathering all your custom creations
+                    </p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-6">
-            {/* Header with Gradient Background */}
-            <div className="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
-                                <BookOpen className="text-white" size={32} />
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
+            {/* Header */}
+            <div style={{
+                marginBottom: '32px',
+                background: 'linear-gradient(to bottom right, #eff6ff, #eef2ff)',
+                borderRadius: '16px',
+                padding: '32px',
+                border: '1px solid #dbeafe',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '24px'
+                }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                            <div style={{
+                                padding: '12px',
+                                background: '#3b82f6',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                            }}>
+                                <BookOpen style={{ color: 'white' }} size={32} />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-bold text-gray-900">Background Manager</h1>
-                                <p className="text-gray-600 mt-1">
+                                <h1 style={{
+                                    fontSize: '36px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    margin: 0
+                                }}>
+                                    Background Manager
+                                </h1>
+                                <p style={{
+                                    color: '#4b5563',
+                                    marginTop: '4px',
+                                    margin: 0
+                                }}>
                                     Create and manage character backstories with unique features
                                 </p>
                             </div>
@@ -125,130 +165,281 @@ function BackgroundManager() {
                     </div>
                     <Link
                         to="/backgrounds/create"
-                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 24px',
+                            background: '#3b82f6',
+                            color: 'white',
+                            borderRadius: '12px',
+                            textDecoration: 'none',
+                            fontWeight: '500',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                            transition: 'all 0.2s',
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#2563eb';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = '#3b82f6';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                        }}
                     >
                         <Plus size={20} />
-                        <span className="font-medium">Create New Background</span>
+                        <span>Create New Background</span>
                     </Link>
                 </div>
 
-                {/* Enhanced Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="bg-white rounded-xl p-4 border border-blue-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <BookOpen className="text-blue-600" size={20} />
-                            <span className="text-2xl font-bold text-blue-900">{stats.total}</span>
+                {/* Stats Grid */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '16px'
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #dbeafe',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <BookOpen style={{ color: '#3b82f6' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e40af' }}>{stats.total}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Total Backgrounds</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Backgrounds</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Target className="text-green-600" size={20} />
-                            <span className="text-2xl font-bold text-green-900">{stats.totalSkills}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #d1fae5',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Target style={{ color: '#10b981' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#065f46' }}>{stats.totalSkills}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Total Skills</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Skills</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-orange-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Briefcase className="text-orange-600" size={20} />
-                            <span className="text-2xl font-bold text-orange-900">{stats.totalTools}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #fed7aa',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Briefcase style={{ color: '#f59e0b' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#92400e' }}>{stats.totalTools}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Total Tools</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Total Tools</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-purple-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Award className="text-purple-600" size={20} />
-                            <span className="text-2xl font-bold text-purple-900">{stats.withFeatures}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e9d5ff',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Package style={{ color: '#ec4899' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#831843' }}>{stats.totalEquipment}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">With Features</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Equipment Items</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-pink-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <Package className="text-pink-600" size={20} />
-                            <span className="text-2xl font-bold text-pink-900">{stats.totalEquipment}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ width: '20px', height: '20px', background: '#f3f4f6', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', color: '#4b5563' }}>✓</div>
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{stats.withFeatures}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Total Equipment</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>With Features</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-4 border border-indigo-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <TrendingUp className="text-indigo-600" size={20} />
-                            <span className="text-2xl font-bold text-indigo-900">{stats.avgSkills}</span>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Target style={{ color: '#6b7280' }} size={20} />
+                            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{stats.avgSkills}</span>
                         </div>
-                        <p className="text-xs font-medium text-gray-600">Avg Skills</p>
+                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#4b5563', margin: 0 }}>Avg Skills</p>
                     </div>
                 </div>
             </div>
 
-            {/* Search and Sort Bar */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Search backgrounds by name, skills, or description..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            />
-                        </div>
-                    </div>
+            {/* Search and Filters */}
+            <div style={{
+                display: 'flex',
+                gap: '16px',
+                marginBottom: '24px',
+                flexWrap: 'wrap'
+            }}>
+                <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+                    <Search
+                        style={{
+                            position: 'absolute',
+                            left: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#9ca3af'
+                        }}
+                        size={20}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search backgrounds by name, skills, or description..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '12px 12px 12px 44px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                            transition: 'all 0.2s'
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#3b82f6';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    />
+                </div>
 
-                    <div className="flex items-center gap-3">
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        background: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                    }}
+                >
+                    <option value="name">Sort by Name</option>
+                    <option value="skills">Sort by Skills</option>
+                    <option value="recent">Most Recent</option>
+                </select>
+            </div>
+
+            {/* Results Count */}
+            {searchTerm && filteredBackgrounds.length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                    padding: '12px 16px',
+                    background: '#f3f4f6',
+                    borderRadius: '8px'
+                }}>
+                    <span style={{ fontSize: '14px', color: '#374151' }}>
+                        Found {filteredBackgrounds.length} background{filteredBackgrounds.length !== 1 ? 's' : ''}
+                    </span>
+                    {filteredBackgrounds.length !== backgrounds.length && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            style={{
+                                fontSize: '14px',
+                                color: '#3b82f6',
+                                fontWeight: '500',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                textDecoration: 'none'
+                            }}
+                            onMouseOver={(e) => e.target.style.color = '#2563eb'}
+                            onMouseOut={(e) => e.target.style.color = '#3b82f6'}
                         >
-                            <option value="name">Sort by Name</option>
-                            <option value="skills">Sort by Skills</option>
-                            <option value="recent">Most Recent</option>
-                        </select>
-                    </div>
+                            Clear search
+                        </button>
+                    )}
                 </div>
-
-                {searchTerm && (
-                    <div className="mt-4 flex items-center gap-2">
-                        <span className="text-sm text-gray-600">
-                            Found {filteredBackgrounds.length} background{filteredBackgrounds.length !== 1 ? 's' : ''}
-                        </span>
-                        {filteredBackgrounds.length !== backgrounds.length && (
-                            <button
-                                onClick={() => setSearchTerm('')}
-                                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                            >
-                                Clear search
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Background Cards Grid */}
             {filteredBackgrounds.length === 0 ? (
-                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
-                        <BookOpen className="text-blue-600" size={40} />
+                <div style={{
+                    textAlign: 'center',
+                    padding: '64px 16px',
+                    background: 'linear-gradient(to bottom right, #f9fafb, #f3f4f6)',
+                    borderRadius: '16px',
+                    border: '2px dashed #d1d5db'
+                }}>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '80px',
+                        height: '80px',
+                        background: '#dbeafe',
+                        borderRadius: '50%',
+                        marginBottom: '24px'
+                    }}>
+                        <BookOpen style={{ color: '#3b82f6' }} size={40} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    <h3 style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: '12px'
+                    }}>
                         {searchTerm ? 'No backgrounds found' : 'No backgrounds yet'}
                     </h3>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    <p style={{
+                        color: '#4b5563',
+                        marginBottom: '32px',
+                        maxWidth: '448px',
+                        margin: '0 auto 32px'
+                    }}>
                         {searchTerm
                             ? 'Try adjusting your search terms to find what you\'re looking for'
-                            : 'Start building your campaign by creating your first custom background with unique features and skills'
-                        }
+                            : 'Start building your campaign by creating your first custom background with unique features and skills'}
                     </p>
                     {!searchTerm && (
                         <Link
                             to="/backgrounds/create"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg font-medium"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 24px',
+                                background: '#3b82f6',
+                                color: 'white',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontWeight: '500',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+                            onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
                         >
                             <Plus size={20} />
                             Create Your First Background
@@ -256,111 +447,276 @@ function BackgroundManager() {
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredBackgrounds.map(background => (
-                        <div key={background.id} className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                    gap: '24px'
+                }}>
+                    {filteredBackgrounds.map((background) => (
+                        <div
+                            key={background.id}
+                            style={{
+                                background: 'white',
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s',
+                                cursor: 'pointer',
+                                border: '2px solid #e5e7eb'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                                e.currentTarget.style.borderColor = '#3b82f6';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = '#e5e7eb';
+                            }}
+                        >
                             {/* Card Header with Gradient */}
-                            <div className="bg-gradient-to-br from-blue-500 to-indigo-500 p-6 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-                                <div className="relative">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl font-bold text-white mb-2">{background.name}</h3>
-                                            {background.feature?.name && (
-                                                <div className="flex items-center gap-2">
-                                                    <Award className="text-white/80" size={16} />
-                                                    <span className="text-white/90 text-sm font-medium">
-                                                        {background.feature.name}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <BookOpen className="text-white/80 flex-shrink-0" size={32} />
+                            <div style={{
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                                padding: '24px',
+                                color: 'white',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '128px',
+                                    height: '128px',
+                                    background: 'white',
+                                    opacity: 0.1,
+                                    borderRadius: '50%',
+                                    marginRight: '-64px',
+                                    marginTop: '-64px'
+                                }}></div>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    justifyContent: 'space-between',
+                                    gap: '16px',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            marginBottom: '8px',
+                                            margin: 0,
+                                            marginBottom: '8px'
+                                        }}>
+                                            {background.name}
+                                        </h3>
+                                        {background.feature?.name && (
+                                            <div style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                padding: '4px 12px',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                backdropFilter: 'blur(10px)',
+                                                borderRadius: '9999px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                marginTop: '8px'
+                                            }}>
+                                                Feature: {background.feature.name}
+                                            </div>
+                                        )}
                                     </div>
+                                    <BookOpen style={{ color: 'rgba(255, 255, 255, 0.8)', flexShrink: 0 }} size={32} />
                                 </div>
                             </div>
 
                             {/* Card Body */}
-                            <div className="p-6">
-                                <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
+                            <div style={{ padding: '24px' }}>
+                                <p style={{
+                                    color: '#374151',
+                                    fontSize: '14px',
+                                    lineHeight: '1.6',
+                                    marginBottom: '16px',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                }}>
                                     {background.description}
                                 </p>
 
-                                {/* Skill Proficiencies */}
+                                {/* Skills Display */}
                                 {background.skillProficiencies && background.skillProficiencies.length > 0 && (
-                                    <div className="mb-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Target size={16} className="text-green-600" />
-                                            <p className="text-xs font-bold text-green-900 uppercase tracking-wide">Skill Proficiencies</p>
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            color: '#6b7280',
+                                            marginBottom: '8px',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}>
+                                            Skill Proficiencies
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {background.skillProficiencies.map((skill, index) => (
-                                                <span key={index} className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '8px'
+                                        }}>
+                                            {background.skillProficiencies.slice(0, 3).map((skill, i) => (
+                                                <span
+                                                    key={i}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        background: '#dbeafe',
+                                                        color: '#1e40af',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
                                                     {skill}
                                                 </span>
                                             ))}
+                                            {background.skillProficiencies.length > 3 && (
+                                                <span style={{
+                                                    padding: '6px 12px',
+                                                    background: '#f3f4f6',
+                                                    color: '#6b7280',
+                                                    borderRadius: '9999px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600'
+                                                }}>
+                                                    +{background.skillProficiencies.length - 3} more
+                                                </span>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Tool Proficiencies */}
-                                {background.toolProficiencies && background.toolProficiencies.length > 0 && (
-                                    <div className="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Briefcase size={14} className="text-orange-600" />
-                                            <p className="text-xs font-semibold text-orange-900">Tools</p>
-                                        </div>
-                                        <p className="text-sm text-orange-700">
-                                            {background.toolProficiencies.slice(0, 2).join(', ')}
-                                            {background.toolProficiencies.length > 2 ? '...' : ''}
-                                        </p>
                                     </div>
                                 )}
 
                                 {/* Stats Row */}
-                                <div className="flex items-center justify-between text-sm text-gray-600 py-3 border-t border-b border-gray-100 mb-4">
-                                    <div className="flex items-center gap-1">
-                                        <Target size={16} className="text-green-600" />
-                                        <span className="font-medium">{background.skillProficiencies?.length || 0}</span>
-                                        <span className="text-xs">Skills</span>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontSize: '14px',
+                                    color: '#4b5563',
+                                    padding: '12px 0',
+                                    borderTop: '1px solid #f3f4f6',
+                                    borderBottom: '1px solid #f3f4f6',
+                                    marginBottom: '16px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Target size={16} style={{ color: '#10b981' }} />
+                                        <span style={{ fontWeight: '500' }}>{background.skillProficiencies?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Skills</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <Briefcase size={16} className="text-orange-600" />
-                                        <span className="font-medium">{background.toolProficiencies?.length || 0}</span>
-                                        <span className="text-xs">Tools</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Briefcase size={16} style={{ color: '#f59e0b' }} />
+                                        <span style={{ fontWeight: '500' }}>{background.toolProficiencies?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Tools</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <Package size={16} className="text-pink-600" />
-                                        <span className="font-medium">{background.equipment?.length || 0}</span>
-                                        <span className="text-xs">Items</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Package size={16} style={{ color: '#ec4899' }} />
+                                        <span style={{ fontWeight: '500' }}>{background.equipment?.length || 0}</span>
+                                        <span style={{ fontSize: '12px' }}>Items</span>
                                     </div>
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="grid grid-cols-3 gap-2">
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '8px'
+                                }}>
                                     <button
-                                        onClick={() => navigate(`/backgrounds/${background.id}/edit`)}
-                                        className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/backgrounds/${background.id}/edit`);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}
                                         title="Edit Background"
                                     >
                                         <Edit size={16} />
-                                        <span className="hidden sm:inline">Edit</span>
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Edit</span>
                                     </button>
                                     <button
-                                        onClick={() => handleDuplicate(background.id)}
-                                        className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDuplicate(background.id);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#4b5563',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#374151'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#4b5563'}
                                         title="Duplicate Background"
                                     >
                                         <Copy size={16} />
-                                        <span className="hidden sm:inline">Copy</span>
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Copy</span>
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(background.id, background.name)}
-                                        className="flex items-center justify-center gap-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(background.id, background.name);
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            padding: '10px 12px',
+                                            background: '#dc2626',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
                                         title="Delete Background"
                                     >
                                         <Trash2 size={16} />
-                                        <span className="hidden sm:inline">Delete</span>
+                                        <span style={{
+                                            display: window.innerWidth >= 640 ? 'inline' : 'none'
+                                        }}>Delete</span>
                                     </button>
                                 </div>
                             </div>
