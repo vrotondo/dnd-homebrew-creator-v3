@@ -1,4 +1,4 @@
-// src/App.jsx - FIXED with correct ClassCreator routing
+// src/App.jsx - CLEANED UP VERSION
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
@@ -11,7 +11,6 @@ import {
   Moon,
   Sun,
   Shield,
-  Scroll,
   Crown
 } from 'lucide-react';
 
@@ -38,7 +37,6 @@ function App() {
     return saved ? JSON.parse(saved) : false;
   });
 
-  // Theme persistence
   useEffect(() => {
     localStorage.setItem('dnd-homebrew-darkMode', JSON.stringify(darkMode));
     if (darkMode) {
@@ -72,7 +70,6 @@ function App() {
             : 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 50%, #eef2ff 100%)'
         }}>
 
-        {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 z-40 transition-opacity"
@@ -84,13 +81,11 @@ function App() {
           />
         )}
 
-        {/* Sidebar */}
         <div
           className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } ${darkMode ? 'bg-gray-800' : 'bg-white'} border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'} w-80`}
           style={{ width: '280px' }}
         >
-          {/* Sidebar header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               <div
@@ -121,7 +116,6 @@ function App() {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="mt-6 px-3">
             <div className="space-y-1">
               {navigation.map((item) => {
@@ -144,7 +138,6 @@ function App() {
             </div>
           </nav>
 
-          {/* Theme toggle */}
           <div className="absolute bottom-6 left-3 right-3">
             <button
               onClick={toggleTheme}
@@ -153,15 +146,13 @@ function App() {
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {darkMode ? <Sun className="w-4 h-4 mr-3" /> : <Moon className="w-4 h-4 mr-3" />}
               <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
             </button>
           </div>
         </div>
 
-        {/* Main content */}
         <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-280' : 'ml-0'}`}>
-          {/* Header */}
           <header
             className={`sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b ${darkMode
               ? 'bg-gray-800 border-gray-700'
@@ -199,42 +190,40 @@ function App() {
             </div>
           </header>
 
-          {/* Page content */}
           <main className="p-6">
             <div className="max-w-7xl mx-auto">
               <Routes>
+                {/* Main Pages */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/character-creator" element={<CharacterCreatorPage />} />
                 <Route path="/about" element={<AboutPage />} />
 
-                {/* Class Management Routes */}
+                {/* Class Routes */}
                 <Route path="/classes" element={<ClassManager />} />
                 <Route path="/classes/create" element={<ClassCreator />} />
                 <Route path="/classes/:id/edit" element={<ClassCreator />} />
-
-                {/* NEW: Character Creator specific routes (these were missing!) */}
                 <Route path="/character-creator/class/new" element={<ClassCreator />} />
                 <Route path="/character-creator/class/:id/edit" element={<ClassCreator />} />
-                <Route path="/character-creator/subclass/new" element={<PlaceholderPage title="Subclass Creator (Coming Soon)" />} />
-                <Route path="/character/races/create" element={<RaceCreator />} />
-                <Route path="/character/races/:id/edit" element={<RaceCreator />} />
-                <Route path="/character/backgrounds/create" element={<BackgroundCreator />} />
-                <Route path="/character/backgrounds/:id/edit" element={<BackgroundCreator />} />
 
+                {/* Race Routes - CLEANED UP */}
                 <Route path="/races" element={<RaceManager />} />
                 <Route path="/races/create" element={<RaceCreator />} />
                 <Route path="/races/:id/edit" element={<RaceCreator />} />
 
+                {/* Background Routes - CLEANED UP */}
                 <Route path="/backgrounds" element={<BackgroundManager />} />
                 <Route path="/backgrounds/create" element={<BackgroundCreator />} />
                 <Route path="/backgrounds/:id/edit" element={<BackgroundCreator />} />
 
+                {/* Placeholder Routes */}
+                <Route path="/character-creator/subclass/new" element={<PlaceholderPage title="Subclass Creator (Coming Soon)" />} />
+
+                {/* 404 */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </div>
           </main>
 
-          {/* Footer */}
           <footer
             className={`mt-12 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'
               }`}
@@ -275,33 +264,25 @@ function App() {
   );
 }
 
-// Page title component
 function PageTitle({ darkMode }) {
   const location = useLocation();
 
   const getTitleFromPath = (pathname) => {
-    switch (pathname) {
-      case '/':
-        return 'Home';
-      case '/character-creator':
-        return 'Character Creator';
-      case '/classes':
-        return 'Class Manager';
-      case '/classes/create':
-      case '/character-creator/class/new':
-        return 'Create Class';
-      case '/races':
-        return 'Race Manager';
-      case '/backgrounds':
-        return 'Background Manager';
-      case '/about':
-        return 'About';
-      default:
-        if (pathname.includes('/classes/') && pathname.includes('/edit')) {
-          return 'Edit Class';
-        }
-        return 'D&D Homebrew Creator';
+    if (pathname === '/') return 'Home';
+    if (pathname === '/character-creator') return 'Character Creator';
+    if (pathname === '/classes') return 'Class Manager';
+    if (pathname === '/classes/create' || pathname === '/character-creator/class/new') return 'Create Class';
+    if (pathname === '/races') return 'Race Manager';
+    if (pathname === '/races/create') return 'Create Race';
+    if (pathname === '/backgrounds') return 'Background Manager';
+    if (pathname === '/backgrounds/create') return 'Create Background';
+    if (pathname === '/about') return 'About';
+    if (pathname.includes('/edit')) {
+      if (pathname.includes('/classes/')) return 'Edit Class';
+      if (pathname.includes('/races/')) return 'Edit Race';
+      if (pathname.includes('/backgrounds/')) return 'Edit Background';
     }
+    return 'D&D Homebrew Creator';
   };
 
   return (
@@ -311,7 +292,6 @@ function PageTitle({ darkMode }) {
   );
 }
 
-// Placeholder component for unimplemented pages
 function PlaceholderPage({ title }) {
   return (
     <div className="max-w-4xl mx-auto text-center">
@@ -346,7 +326,6 @@ function PlaceholderPage({ title }) {
   );
 }
 
-// 404 page component
 function NotFoundPage() {
   return (
     <div className="max-w-4xl mx-auto text-center">
