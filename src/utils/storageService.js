@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
     BACKGROUNDS: 'dnd-homebrew-backgrounds',
     ITEMS: 'dnd-homebrew-items',
     SPELLS: 'dnd-homebrew-spells',
+    WORLDS: 'dnd-homebrew-worlds',
     SETTINGS: 'dnd-homebrew-settings'
 };
 
@@ -460,6 +461,24 @@ const getBackgroundById = (id) => getItemById(STORAGE_KEYS.BACKGROUNDS, id);
 const saveBackground = (background) => saveItem(STORAGE_KEYS.BACKGROUNDS, background);
 const deleteBackground = (id) => deleteItem(STORAGE_KEYS.BACKGROUNDS, id);
 
+// Worlds
+const getWorlds = (options) => getAllItems(STORAGE_KEYS.WORLDS, options);
+const getWorldById = (id) => getItemById(STORAGE_KEYS.WORLDS, id);
+const saveWorld = (world) => saveItem(STORAGE_KEYS.WORLDS, world);
+const deleteWorld = (id) => deleteItem(STORAGE_KEYS.WORLDS, id);
+const duplicateWorld = (world) => {
+    const duplicate = {
+        ...world,
+        id: null,
+        name: world.name.includes('(Copy)')
+            ? world.name
+            : `${world.name} (Copy)`,
+        createdAt: null,
+        updatedAt: null
+    };
+    return saveWorld(duplicate);
+};
+
 export {
     // Storage keys
     STORAGE_KEYS,
@@ -481,6 +500,7 @@ export {
     getClassById,
     saveClass,
     deleteClass,
+    duplicateClass,
 
     // Subclass methods
     getSubclasses,
@@ -502,5 +522,10 @@ export {
     deleteBackground,
     duplicateBackground,
 
-    duplicateClass
+    // World methods
+    getWorlds,
+    getWorldById,
+    saveWorld,
+    deleteWorld,
+    duplicateWorld
 };

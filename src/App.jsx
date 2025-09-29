@@ -1,4 +1,4 @@
-// src/App.jsx - CLEANED UP VERSION
+// src/App.jsx
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
@@ -25,10 +25,12 @@ import AboutPage from './pages/AboutPage';
 import ClassManager from './pages/ClassManager';
 import RaceManager from './pages/RaceManager';
 import BackgroundManager from './pages/BackgroundManager';
+import WorldManager from './pages/WorldManager';
 
 import ClassCreator from './components/creators/character/ClassCreator';
 import RaceCreator from './components/creators/character/RaceCreator';
 import BackgroundCreator from './components/creators/character/BackgroundCreator';
+import WorldCreator from './components/creators/character/WorldCreator';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -214,6 +216,11 @@ function App() {
                 <Route path="/backgrounds" element={<BackgroundManager />} />
                 <Route path="/backgrounds/create" element={<BackgroundCreator />} />
                 <Route path="/backgrounds/:id/edit" element={<BackgroundCreator />} />
+
+                {/* World Routes */}
+                <Route path="/worlds" element={<WorldManager />} />
+                <Route path="/worlds/create" element={<WorldCreator />} />
+                <Route path="/worlds/:id/edit" element={<WorldCreator />} />
 
                 {/* Placeholder Routes */}
                 <Route path="/character-creator/subclass/new" element={<PlaceholderPage title="Subclass Creator (Coming Soon)" />} />
