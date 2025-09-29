@@ -1,8 +1,8 @@
-// src/components/creators/character/RaceCreator.jsx - FIXED VERSION
+// src/components/creators/character/RaceCreator.jsx - ENHANCED VERSION
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveRace, getRaceById } from '../../../utils/storageService';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Crown } from 'lucide-react';
 import ExportModal from '../../export/ExportModal';
 import RacialTraits from './RacialTraits';
 import Subraces from './Subraces';
@@ -43,23 +43,29 @@ function RaceCreator({ onSave, onCancel }) {
     const [showExportModal, setShowExportModal] = useState(false);
 
     const steps = [
-        { id: 1, name: 'Basic Info' },
-        { id: 2, name: 'Abilities' },
-        { id: 3, name: 'Languages' },
-        { id: 4, name: 'Traits' },
-        { id: 5, name: 'Subraces' },
-        { id: 6, name: 'Preview' }
+        { id: 1, name: 'Basic Info', shortName: 'Info' },
+        { id: 2, name: 'Abilities', shortName: 'Abilities' },
+        { id: 3, name: 'Languages', shortName: 'Languages' },
+        { id: 4, name: 'Traits', shortName: 'Traits' },
+        { id: 5, name: 'Subraces', shortName: 'Subraces' },
+        { id: 6, name: 'Preview', shortName: 'Preview' }
     ];
 
     // Load existing race if editing
     useEffect(() => {
         if (id) {
+            console.log('Loading race with ID:', id);
             const existingRace = getRaceById(id);
+            console.log('Loaded race:', existingRace);
             if (existingRace) {
                 setRaceData(existingRace);
+            } else {
+                console.error('Race not found with ID:', id);
+                alert('Race not found!');
+                navigate('/races');
             }
         }
-    }, [id]);
+    }, [id, navigate]);
 
     const updateRaceData = (updates) => {
         setRaceData(prev => ({ ...prev, ...updates }));
@@ -94,40 +100,31 @@ function RaceCreator({ onSave, onCancel }) {
     };
 
     const canProceedToNextStep = () => {
-        // Step 1: Basic Info - requires name and description
         if (currentStep === 1) {
             if (!raceData.name.trim()) return false;
             if (!raceData.description.trim() || raceData.description.length < 20) return false;
             return true;
         }
 
-        // Step 2: Abilities - requires at least 1 point, max 3
         if (currentStep === 2) {
             const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
             if (totalASI < 1 || totalASI > 3) return false;
             return true;
         }
 
-        // Step 3: Languages - requires at least one
         if (currentStep === 3) {
             if (raceData.languages.length === 0) return false;
             return true;
         }
 
-        // Steps 4, 5, 6 are optional - always can proceed
         return true;
     };
 
     const nextStep = () => {
-        console.log('Next clicked, current step:', currentStep);
-        console.log('Can proceed:', canProceedToNextStep());
-        console.log('Race data:', raceData);
-
         if (canProceedToNextStep() && currentStep < steps.length) {
             setCurrentStep(currentStep + 1);
             setErrors({});
         } else {
-            // Show validation errors
             const newErrors = {};
             if (currentStep === 1) {
                 if (!raceData.name.trim()) newErrors.name = 'Race name is required';
@@ -156,6 +153,7 @@ function RaceCreator({ onSave, onCancel }) {
     const handleSave = () => {
         try {
             const savedId = saveRace(raceData);
+            alert(`Race "${raceData.name}" saved successfully!`);
             if (onSave) {
                 onSave(savedId);
             } else {
@@ -171,9 +169,9 @@ function RaceCreator({ onSave, onCancel }) {
         switch (currentStep) {
             case 1: // Basic Info
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                    <div style={{ padding: '32px' }}>
+                        <div style={{ marginBottom: '28px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                 Race Name *
                             </label>
                             <input
@@ -183,48 +181,58 @@ function RaceCreator({ onSave, onCancel }) {
                                 onChange={handleInputChange}
                                 style={{
                                     width: '100%',
-                                    padding: '12px',
-                                    border: errors.name ? '2px solid #ef4444' : '1px solid #d1d5db',
-                                    borderRadius: '8px',
-                                    fontSize: '16px'
+                                    padding: '14px 16px',
+                                    border: errors.name ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                                    borderRadius: '10px',
+                                    fontSize: '16px',
+                                    transition: 'all 0.2s',
+                                    outline: 'none'
                                 }}
+                                onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
+                                onBlur={(e) => e.target.style.borderColor = errors.name ? '#ef4444' : '#e5e7eb'}
                                 placeholder="e.g., Dragonborn"
                             />
                             {errors.name && (
-                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.name}</p>
+                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>{errors.name}</p>
                             )}
                         </div>
 
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                        <div style={{ marginBottom: '28px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                 Description *
                             </label>
                             <textarea
                                 name="description"
                                 value={raceData.description}
                                 onChange={handleInputChange}
-                                rows={4}
+                                rows={5}
                                 style={{
                                     width: '100%',
-                                    padding: '12px',
-                                    border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db',
-                                    borderRadius: '8px',
+                                    padding: '14px 16px',
+                                    border: errors.description ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                                    borderRadius: '10px',
                                     fontSize: '16px',
-                                    resize: 'vertical'
+                                    resize: 'vertical',
+                                    fontFamily: 'inherit',
+                                    lineHeight: '1.6',
+                                    transition: 'all 0.2s',
+                                    outline: 'none'
                                 }}
+                                onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
+                                onBlur={(e) => e.target.style.borderColor = errors.description ? '#ef4444' : '#e5e7eb'}
                                 placeholder="Describe the race's appearance, culture, and characteristics..."
                             />
                             {errors.description && (
-                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.description}</p>
+                                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>{errors.description}</p>
                             )}
-                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '6px' }}>
                                 {raceData.description.length}/20 characters minimum
                             </p>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
                             <div>
-                                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                     Size
                                 </label>
                                 <select
@@ -233,11 +241,12 @@ function RaceCreator({ onSave, onCancel }) {
                                     onChange={handleInputChange}
                                     style={{
                                         width: '100%',
-                                        padding: '12px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '8px',
+                                        padding: '14px 16px',
+                                        border: '2px solid #e5e7eb',
+                                        borderRadius: '10px',
                                         fontSize: '16px',
-                                        backgroundColor: 'white'
+                                        backgroundColor: 'white',
+                                        cursor: 'pointer'
                                     }}
                                 >
                                     <option value="Small">Small</option>
@@ -247,7 +256,7 @@ function RaceCreator({ onSave, onCancel }) {
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                                <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                     Speed (feet)
                                 </label>
                                 <input
@@ -260,20 +269,20 @@ function RaceCreator({ onSave, onCancel }) {
                                     step="5"
                                     style={{
                                         width: '100%',
-                                        padding: '12px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '8px',
+                                        padding: '14px 16px',
+                                        border: '2px solid #e5e7eb',
+                                        borderRadius: '10px',
                                         fontSize: '16px'
                                     }}
                                 />
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                        <div style={{ marginBottom: '28px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                 Age & Lifespan
                             </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <input
                                     type="text"
                                     name="age.maturity"
@@ -281,9 +290,9 @@ function RaceCreator({ onSave, onCancel }) {
                                     onChange={handleInputChange}
                                     placeholder="Reaches adulthood at..."
                                     style={{
-                                        padding: '12px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '8px',
+                                        padding: '14px 16px',
+                                        border: '2px solid #e5e7eb',
+                                        borderRadius: '10px',
                                         fontSize: '16px'
                                     }}
                                 />
@@ -294,17 +303,17 @@ function RaceCreator({ onSave, onCancel }) {
                                     onChange={handleInputChange}
                                     placeholder="Lives about..."
                                     style={{
-                                        padding: '12px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '8px',
+                                        padding: '14px 16px',
+                                        border: '2px solid #e5e7eb',
+                                        borderRadius: '10px',
                                         fontSize: '16px'
                                     }}
                                 />
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px' }}>
+                        <div style={{ marginBottom: '28px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px', color: '#374151' }}>
                                 Alignment
                             </label>
                             <input
@@ -315,23 +324,31 @@ function RaceCreator({ onSave, onCancel }) {
                                 placeholder="e.g., Usually chaotic good"
                                 style={{
                                     width: '100%',
-                                    padding: '12px',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '8px',
+                                    padding: '14px 16px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '10px',
                                     fontSize: '16px'
                                 }}
                             />
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '16px',
+                            padding: '16px',
+                            backgroundColor: '#f3f4f6',
+                            borderRadius: '10px',
+                            border: '2px solid #e5e7eb'
+                        }}>
                             <input
                                 type="checkbox"
                                 name="vision.darkvision"
                                 checked={raceData.vision.darkvision}
                                 onChange={handleInputChange}
-                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                             />
-                            <label style={{ fontWeight: '500', fontSize: '14px', cursor: 'pointer' }}>
+                            <label style={{ fontWeight: '600', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
                                 Has Darkvision
                             </label>
                             {raceData.vision.darkvision && (
@@ -345,14 +362,15 @@ function RaceCreator({ onSave, onCancel }) {
                                         max="120"
                                         step="30"
                                         style={{
-                                            width: '80px',
-                                            padding: '8px',
-                                            border: '1px solid #d1d5db',
-                                            borderRadius: '6px',
-                                            fontSize: '14px'
+                                            width: '90px',
+                                            padding: '10px',
+                                            border: '2px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            fontSize: '15px',
+                                            fontWeight: '600'
                                         }}
                                     />
-                                    <span style={{ fontSize: '14px', color: '#6b7280' }}>feet</span>
+                                    <span style={{ fontSize: '15px', color: '#6b7280', fontWeight: '500' }}>feet</span>
                                 </>
                             )}
                         </div>
@@ -368,22 +386,23 @@ function RaceCreator({ onSave, onCancel }) {
                 const totalASI = Object.values(raceData.abilityScoreIncreases).reduce((sum, val) => sum + val, 0);
 
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
                             Ability Score Increases
                         </h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
                             Most races get +2 to one ability and +1 to another (total: 3), or +1 to two abilities (total: 2).
                         </p>
 
                         {errors.abilities && (
                             <div style={{
-                                padding: '12px',
+                                padding: '16px',
                                 backgroundColor: '#fee2e2',
-                                border: '1px solid #ef4444',
-                                borderRadius: '8px',
-                                marginBottom: '16px',
-                                color: '#dc2626'
+                                border: '2px solid #ef4444',
+                                borderRadius: '12px',
+                                marginBottom: '20px',
+                                color: '#dc2626',
+                                fontWeight: '600'
                             }}>
                                 {errors.abilities}
                             </div>
@@ -391,34 +410,36 @@ function RaceCreator({ onSave, onCancel }) {
 
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '16px',
-                            marginBottom: '24px'
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                            gap: '20px',
+                            marginBottom: '28px'
                         }}>
                             {abilities.map(ability => (
                                 <div key={ability} style={{
-                                    padding: '16px',
+                                    padding: '20px',
                                     border: '2px solid #e5e7eb',
-                                    borderRadius: '12px',
+                                    borderRadius: '14px',
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'white',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
                                 }}>
                                     <div>
-                                        <div style={{ fontWeight: '600', fontSize: '16px' }}>{ability}</div>
-                                        <div style={{ fontSize: '14px', color: '#6b7280' }}>{abilityNames[ability]}</div>
+                                        <div style={{ fontWeight: '700', fontSize: '18px', color: '#111827' }}>{ability}</div>
+                                        <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '2px' }}>{abilityNames[ability]}</div>
                                     </div>
                                     <select
                                         value={raceData.abilityScoreIncreases[ability]}
                                         onChange={(e) => handleAbilityChange(ability, e.target.value)}
                                         style={{
-                                            width: '70px',
-                                            padding: '8px',
+                                            width: '75px',
+                                            padding: '10px 12px',
                                             border: '2px solid #d1d5db',
-                                            borderRadius: '8px',
-                                            fontSize: '16px',
-                                            fontWeight: '600',
+                                            borderRadius: '10px',
+                                            fontSize: '17px',
+                                            fontWeight: '700',
                                             textAlign: 'center',
                                             backgroundColor: 'white',
                                             cursor: 'pointer'
@@ -434,16 +455,16 @@ function RaceCreator({ onSave, onCancel }) {
                         </div>
 
                         <div style={{
-                            padding: '16px',
+                            padding: '20px',
                             backgroundColor: totalASI >= 1 && totalASI <= 3 ? '#d1fae5' : '#fee2e2',
-                            borderRadius: '12px',
+                            borderRadius: '14px',
                             border: `2px solid ${totalASI >= 1 && totalASI <= 3 ? '#10b981' : '#ef4444'}`
                         }}>
-                            <p style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>
-                                Total Ability Score Increases: +{totalASI}
-                                {totalASI < 1 && <span style={{ color: '#dc2626', marginLeft: '8px' }}>⚠ Too few points</span>}
-                                {totalASI > 3 && <span style={{ color: '#dc2626', marginLeft: '8px' }}>⚠ Too many points</span>}
-                                {(totalASI >= 1 && totalASI <= 3) && <span style={{ color: '#059669', marginLeft: '8px' }}>✓ Valid</span>}
+                            <p style={{ fontSize: '17px', fontWeight: '700', margin: 0 }}>
+                                Total Ability Score Increases: <span style={{ fontSize: '20px' }}>+{totalASI}</span>
+                                {totalASI < 1 && <span style={{ color: '#dc2626', marginLeft: '12px' }}>⚠ Too few points</span>}
+                                {totalASI > 3 && <span style={{ color: '#dc2626', marginLeft: '12px' }}>⚠ Too many points</span>}
+                                {(totalASI >= 1 && totalASI <= 3) && <span style={{ color: '#059669', marginLeft: '12px' }}>✓ Valid</span>}
                             </p>
                         </div>
                     </div>
@@ -457,22 +478,23 @@ function RaceCreator({ onSave, onCancel }) {
                 ];
 
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
                             Languages
                         </h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
                             Most races speak Common plus one or more additional languages.
                         </p>
 
                         {errors.languages && (
                             <div style={{
-                                padding: '12px',
+                                padding: '16px',
                                 backgroundColor: '#fee2e2',
-                                border: '1px solid #ef4444',
-                                borderRadius: '8px',
-                                marginBottom: '16px',
-                                color: '#dc2626'
+                                border: '2px solid #ef4444',
+                                borderRadius: '12px',
+                                marginBottom: '20px',
+                                color: '#dc2626',
+                                fontWeight: '600'
                             }}>
                                 {errors.languages}
                             </div>
@@ -480,32 +502,33 @@ function RaceCreator({ onSave, onCancel }) {
 
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
-                            marginBottom: '24px'
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '28px'
                         }}>
                             {languages.map(language => (
                                 <label key={language} style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px',
-                                    padding: '12px',
-                                    border: raceData.languages.includes(language) ? '2px solid #3b82f6' : '2px solid #e5e7eb',
-                                    borderRadius: '8px',
+                                    gap: '12px',
+                                    padding: '16px',
+                                    border: raceData.languages.includes(language) ? '3px solid #8b5cf6' : '2px solid #e5e7eb',
+                                    borderRadius: '12px',
                                     cursor: 'pointer',
-                                    backgroundColor: raceData.languages.includes(language) ? '#eff6ff' : 'white',
-                                    transition: 'all 0.2s'
+                                    backgroundColor: raceData.languages.includes(language) ? '#f5f3ff' : 'white',
+                                    transition: 'all 0.2s',
+                                    boxShadow: raceData.languages.includes(language) ? '0 4px 6px rgba(139, 92, 246, 0.2)' : 'none'
                                 }}>
                                     <input
                                         type="checkbox"
                                         checked={raceData.languages.includes(language)}
                                         onChange={(e) => handleLanguageChange(language, e.target.checked)}
-                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                                     />
                                     <span style={{
-                                        fontSize: '14px',
-                                        fontWeight: raceData.languages.includes(language) ? '600' : '400',
-                                        color: raceData.languages.includes(language) ? '#1e40af' : '#374151'
+                                        fontSize: '15px',
+                                        fontWeight: raceData.languages.includes(language) ? '700' : '500',
+                                        color: raceData.languages.includes(language) ? '#5b21b6' : '#374151'
                                     }}>
                                         {language}
                                     </span>
@@ -515,75 +538,69 @@ function RaceCreator({ onSave, onCancel }) {
 
                         {raceData.languages.length > 0 && (
                             <div style={{
-                                padding: '16px',
+                                padding: '20px',
                                 backgroundColor: '#dbeafe',
-                                borderRadius: '12px',
+                                borderRadius: '14px',
                                 border: '2px solid #3b82f6'
                             }}>
-                                <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>
-                                    <strong>Selected:</strong> {raceData.languages.join(', ')}
+                                <p style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>
+                                    <strong>Selected ({raceData.languages.length}):</strong> {raceData.languages.join(', ')}
                                 </p>
                             </div>
                         )}
                     </div>
                 );
 
-            case 4: // Traits
+            case 4:
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
                             Racial Traits (Optional)
                         </h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
-                            Add unique abilities, resistances, or features that define this race. This step is optional.
+                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
+                            Add unique abilities, resistances, or features that define this race.
                         </p>
-
                         <RacialTraits raceData={raceData} updateRaceData={updateRaceData} />
                     </div>
                 );
 
-            case 5: // Subraces
+            case 5:
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                    <div style={{ padding: '32px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>
                             Subraces (Optional)
                         </h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '28px', lineHeight: '1.6' }}>
                             Add subraces to provide variants of your main race.
                         </p>
-
                         <Subraces raceData={raceData} updateRaceData={updateRaceData} />
                     </div>
                 );
 
-            case 6: // Preview
+            case 6:
                 return (
-                    <div style={{ padding: '24px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>Race Preview</h3>
+                    <div style={{ padding: '32px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+                            <h3 style={{ fontSize: '22px', fontWeight: '700', margin: 0, color: '#111827' }}>Race Preview</h3>
                             <button
                                 onClick={() => setShowExportModal(true)}
                                 style={{
-                                    padding: '12px 24px',
+                                    padding: '14px 28px',
                                     backgroundColor: '#6b7280',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
+                                    borderRadius: '10px',
+                                    fontWeight: '600',
+                                    fontSize: '15px',
                                     cursor: 'pointer'
                                 }}
                             >
                                 Export
                             </button>
                         </div>
-
                         <RacePreview raceData={raceData} />
-
                         {showExportModal && (
-                            <ExportModal
-                                classData={raceData}
-                                onClose={() => setShowExportModal(false)}
-                            />
+                            <ExportModal classData={raceData} onClose={() => setShowExportModal(false)} />
                         )}
                     </div>
                 );
@@ -594,94 +611,151 @@ function RaceCreator({ onSave, onCancel }) {
     };
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
-            {/* Header */}
-            <div style={{ marginBottom: '32px' }}>
-                <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
-                    {id ? 'Edit Race' : 'Create Race'}
-                </h1>
-                <p style={{ color: '#6b7280', fontSize: '16px' }}>
-                    Design a custom race with unique traits and abilities
-                </p>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+            {/* Enhanced Header */}
+            <div style={{
+                marginBottom: '32px',
+                padding: '32px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                borderRadius: '20px',
+                boxShadow: '0 10px 25px rgba(139, 92, 246, 0.3)'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                    <div style={{
+                        padding: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        borderRadius: '12px'
+                    }}>
+                        <Crown size={32} style={{ color: 'white' }} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: 'white', margin: 0 }}>
+                            {id ? 'Edit Race' : 'Create New Race'}
+                        </h1>
+                        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', margin: 0 }}>
+                            Design a custom race with unique traits and abilities
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {/* Step Navigation */}
+            {/* ENHANCED Step Navigation - Much More Prominent */}
             <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
                 marginBottom: '32px',
-                padding: '24px',
-                backgroundColor: '#f9fafb',
-                borderRadius: '12px',
-                border: '1px solid #e5e7eb'
+                padding: '32px',
+                backgroundColor: 'white',
+                borderRadius: '20px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: '2px solid #e5e7eb'
             }}>
-                {steps.map((step, index) => (
-                    <div key={step.id} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            backgroundColor: currentStep === step.id ? '#3b82f6' : currentStep > step.id ? '#10b981' : '#e5e7eb',
-                            color: currentStep >= step.id ? 'white' : '#6b7280',
-                            border: currentStep === step.id ? '3px solid #93c5fd' : 'none'
-                        }}>
-                            {currentStep > step.id ? '✓' : step.id}
-                        </div>
-                        <span style={{
-                            marginLeft: '12px',
-                            fontSize: '14px',
-                            fontWeight: currentStep === step.id ? '600' : '400',
-                            color: currentStep === step.id ? '#1e40af' : '#6b7280'
-                        }}>
-                            {step.name}
-                        </span>
-                        {index < steps.length - 1 && (
-                            <div style={{
-                                flex: 1,
-                                height: '2px',
-                                backgroundColor: currentStep > step.id ? '#10b981' : '#e5e7eb',
-                                margin: '0 16px'
-                            }} />
-                        )}
-                    </div>
-                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {steps.map((step, index) => {
+                        const isActive = currentStep === step.id;
+                        const isCompleted = currentStep > step.id;
+                        const canClick = true; // Allow clicking on any step
+
+                        return (
+                            <div key={step.id} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                <button
+                                    onClick={() => canClick && setCurrentStep(step.id)}
+                                    disabled={!canClick}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: canClick ? 'pointer' : 'not-allowed',
+                                        opacity: canClick ? 1 : 0.5,
+                                        padding: '8px',
+                                        transition: 'all 0.3s'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '56px',
+                                        height: '56px',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '20px',
+                                        fontWeight: '700',
+                                        backgroundColor: isActive ? '#8b5cf6' : isCompleted ? '#10b981' : '#e5e7eb',
+                                        color: isActive || isCompleted ? 'white' : '#6b7280',
+                                        border: isActive ? '4px solid #c4b5fd' : isCompleted ? '4px solid #6ee7b7' : '4px solid transparent',
+                                        boxShadow: isActive ? '0 6px 20px rgba(139, 92, 246, 0.4)' : isCompleted ? '0 6px 20px rgba(16, 185, 129, 0.4)' : 'none',
+                                        transition: 'all 0.3s',
+                                        transform: isActive ? 'scale(1.1)' : 'scale(1)'
+                                    }}>
+                                        {isCompleted ? '✓' : step.id}
+                                    </div>
+                                    <span style={{
+                                        fontSize: '14px',
+                                        fontWeight: isActive ? '700' : '600',
+                                        color: isActive ? '#8b5cf6' : isCompleted ? '#10b981' : '#6b7280',
+                                        textAlign: 'center',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {step.shortName}
+                                    </span>
+                                </button>
+                                {index < steps.length - 1 && (
+                                    <div style={{
+                                        width: '60px',
+                                        height: '4px',
+                                        backgroundColor: isCompleted ? '#10b981' : '#e5e7eb',
+                                        margin: '0 -8px',
+                                        marginTop: '-30px',
+                                        borderRadius: '2px',
+                                        transition: 'all 0.3s'
+                                    }} />
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Step Content */}
             <div style={{
                 backgroundColor: 'white',
-                borderRadius: '12px',
-                border: '1px solid #e5e7eb',
-                marginBottom: '24px',
-                minHeight: '400px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                borderRadius: '20px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: '2px solid #e5e7eb',
+                marginBottom: '32px',
+                minHeight: '500px'
             }}>
                 {renderStepContent()}
             </div>
 
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '24px',
+                backgroundColor: 'white',
+                borderRadius: '20px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                border: '2px solid #e5e7eb'
+            }}>
                 <button
                     onClick={prevStep}
                     disabled={currentStep === 1}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px 24px',
+                        gap: '10px',
+                        padding: '14px 28px',
                         backgroundColor: currentStep === 1 ? '#f3f4f6' : '#6b7280',
                         color: currentStep === 1 ? '#9ca3af' : 'white',
                         border: 'none',
-                        borderRadius: '8px',
-                        fontWeight: '500',
+                        borderRadius: '12px',
+                        fontWeight: '600',
                         fontSize: '16px',
                         cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
-                        opacity: currentStep === 1 ? 0.5 : 1
+                        opacity: currentStep === 1 ? 0.5 : 1,
+                        transition: 'all 0.2s'
                     }}
                 >
                     <ChevronLeft size={20} />
@@ -692,14 +766,15 @@ function RaceCreator({ onSave, onCancel }) {
                     <button
                         onClick={onCancel || (() => navigate('/races'))}
                         style={{
-                            padding: '12px 24px',
+                            padding: '14px 28px',
                             border: '2px solid #d1d5db',
                             backgroundColor: 'white',
                             color: '#374151',
-                            borderRadius: '8px',
-                            fontWeight: '500',
+                            borderRadius: '12px',
+                            fontWeight: '600',
                             fontSize: '16px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
                         }}
                     >
                         Cancel
@@ -711,17 +786,20 @@ function RaceCreator({ onSave, onCancel }) {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '12px 32px',
+                                gap: '10px',
+                                padding: '14px 36px',
                                 backgroundColor: '#3b82f6',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: '600',
+                                borderRadius: '12px',
+                                fontWeight: '700',
                                 fontSize: '16px',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 6px rgba(59, 130, 246, 0.3)'
+                                boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
+                                transition: 'all 0.2s'
                             }}
+                            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
                         >
                             Next
                             <ChevronRight size={20} />
@@ -732,17 +810,20 @@ function RaceCreator({ onSave, onCancel }) {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '12px 32px',
+                                gap: '10px',
+                                padding: '14px 36px',
                                 backgroundColor: '#10b981',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: '600',
+                                borderRadius: '12px',
+                                fontWeight: '700',
                                 fontSize: '16px',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)'
+                                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
+                                transition: 'all 0.2s'
                             }}
+                            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
                         >
                             <Check size={20} />
                             Save Race
