@@ -11,7 +11,8 @@ import {
   Moon,
   Sun,
   Shield,
-  Crown
+  Crown,
+  Map
 } from 'lucide-react';
 
 import './App.css';
@@ -58,6 +59,7 @@ function App() {
     { name: 'Manage Classes', href: '/classes', icon: Sword },
     { name: 'Manage Races', href: '/races', icon: Crown },
     { name: 'Manage Backgrounds', href: '/backgrounds', icon: BookOpen },
+    { name: 'Manage Worlds', href: '/worlds', icon: Map },
     { name: 'About', href: '/about', icon: Shield },
   ];
 

@@ -1,4 +1,4 @@
-// src/components/creators/world/WorldCreator.jsx - World Builder Creator
+// src/components/creators/WorldCreator.jsx - Complete World Builder Creator
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { saveWorld, getWorldById } from '../../../utils/storageService';
@@ -13,6 +13,12 @@ const WORLD_THEMES = [
 const TECH_LEVELS = [
     'Stone Age', 'Bronze Age', 'Iron Age', 'Medieval',
     'Renaissance', 'Industrial', 'Modern', 'Futuristic'
+];
+
+const ALIGNMENTS = [
+    'Lawful Good', 'Neutral Good', 'Chaotic Good',
+    'Lawful Neutral', 'Neutral', 'Chaotic Neutral',
+    'Lawful Evil', 'Neutral Evil', 'Chaotic Evil'
 ];
 
 function WorldCreator({ onSave, onCancel }) {
@@ -196,43 +202,41 @@ function WorldCreator({ onSave, onCancel }) {
                                     padding: '12px',
                                     border: errors.name ? '2px solid #ef4444' : '1px solid #d1d5db',
                                     borderRadius: '8px',
-                                    fontSize: '16px',
-                                    outline: 'none'
+                                    fontSize: '14px'
                                 }}
                             />
                             {errors.name && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
-                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.name}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', color: '#ef4444', fontSize: '14px' }}>
+                                    <AlertCircle size={14} />
+                                    {errors.name}
                                 </div>
                             )}
                         </div>
 
                         <div style={{ marginBottom: '24px' }}>
                             <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px', fontSize: '14px', color: '#374151' }}>
-                                Description *
+                                World Description *
                             </label>
                             <textarea
                                 name="description"
                                 value={worldData.description}
                                 onChange={handleInputChange}
-                                placeholder="Describe your world's overall setting, atmosphere, and what makes it unique..."
+                                placeholder="Describe your world's overall feel, major themes, and what makes it unique..."
                                 rows={6}
                                 style={{
                                     width: '100%',
                                     padding: '12px',
                                     border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db',
                                     borderRadius: '8px',
-                                    fontSize: '16px',
-                                    outline: 'none',
+                                    fontSize: '14px',
                                     fontFamily: 'inherit',
                                     resize: 'vertical'
                                 }}
                             />
                             {errors.description && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                    <AlertCircle size={14} style={{ color: '#ef4444' }} />
-                                    <p style={{ color: '#ef4444', fontSize: '14px', margin: 0 }}>{errors.description}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', color: '#ef4444', fontSize: '14px' }}>
+                                    <AlertCircle size={14} />
+                                    {errors.description}
                                 </div>
                             )}
                         </div>
@@ -252,8 +256,7 @@ function WorldCreator({ onSave, onCancel }) {
                                         border: '1px solid #d1d5db',
                                         borderRadius: '8px',
                                         fontSize: '14px',
-                                        background: 'white',
-                                        cursor: 'pointer'
+                                        background: 'white'
                                     }}
                                 >
                                     {WORLD_THEMES.map(theme => (
@@ -276,8 +279,7 @@ function WorldCreator({ onSave, onCancel }) {
                                         border: '1px solid #d1d5db',
                                         borderRadius: '8px',
                                         fontSize: '14px',
-                                        background: 'white',
-                                        cursor: 'pointer'
+                                        background: 'white'
                                     }}
                                 >
                                     {TECH_LEVELS.map(level => (
@@ -329,6 +331,7 @@ function WorldCreator({ onSave, onCancel }) {
                                 borderRadius: '12px',
                                 textAlign: 'center'
                             }}>
+                                <Map size={48} style={{ color: '#9ca3af', margin: '0 auto 16px' }} />
                                 <p style={{ color: '#6b7280', marginBottom: '16px' }}>No regions added yet</p>
                                 <button
                                     onClick={addRegion}
@@ -352,7 +355,7 @@ function WorldCreator({ onSave, onCancel }) {
                                         padding: '20px',
                                         border: '1px solid #e5e7eb',
                                         borderRadius: '12px',
-                                        background: '#f9fafb'
+                                        background: '#ffffff'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
                                             <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: 0 }}>
@@ -361,14 +364,14 @@ function WorldCreator({ onSave, onCancel }) {
                                             <button
                                                 onClick={() => removeRegion(index)}
                                                 style={{
-                                                    padding: '6px',
+                                                    padding: '4px',
                                                     background: 'transparent',
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     color: '#ef4444'
                                                 }}
                                             >
-                                                <X size={18} />
+                                                <X size={20} />
                                             </button>
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -399,8 +402,23 @@ function WorldCreator({ onSave, onCancel }) {
                                                 }}
                                             />
                                         </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Population (e.g., 50,000 inhabitants)"
+                                            value={region.population}
+                                            onChange={(e) => updateRegion(index, 'population', e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                fontSize: '14px',
+                                                marginTop: '12px',
+                                                background: 'white'
+                                            }}
+                                        />
                                         <textarea
-                                            placeholder="Description of this region..."
+                                            placeholder="Describe this region..."
                                             value={region.description}
                                             onChange={(e) => updateRegion(index, 'description', e.target.value)}
                                             rows={3}
@@ -412,6 +430,7 @@ function WorldCreator({ onSave, onCancel }) {
                                                 fontSize: '14px',
                                                 marginTop: '12px',
                                                 fontFamily: 'inherit',
+                                                resize: 'vertical',
                                                 background: 'white'
                                             }}
                                         />
@@ -479,7 +498,7 @@ function WorldCreator({ onSave, onCancel }) {
                                 </button>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '16px' }}>
                                 {worldData.factions.map((faction, index) => (
                                     <div key={faction.id} style={{
                                         padding: '20px',
@@ -494,52 +513,21 @@ function WorldCreator({ onSave, onCancel }) {
                                             <button
                                                 onClick={() => removeFaction(index)}
                                                 style={{
-                                                    padding: '6px',
+                                                    padding: '4px',
                                                     background: 'transparent',
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     color: '#ef4444'
                                                 }}
                                             >
-                                                <X size={18} />
+                                                <X size={20} />
                                             </button>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                                            <input
-                                                type="text"
-                                                placeholder="Faction Name"
-                                                value={faction.name}
-                                                onChange={(e) => updateFaction(index, 'name', e.target.value)}
-                                                style={{
-                                                    padding: '10px',
-                                                    border: '1px solid #d1d5db',
-                                                    borderRadius: '6px',
-                                                    fontSize: '14px',
-                                                    background: 'white'
-                                                }}
-                                            />
-                                            <select
-                                                value={faction.alignment}
-                                                onChange={(e) => updateFaction(index, 'alignment', e.target.value)}
-                                                style={{
-                                                    padding: '10px',
-                                                    border: '1px solid #d1d5db',
-                                                    borderRadius: '6px',
-                                                    fontSize: '14px',
-                                                    background: 'white',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <option value="Good">Good</option>
-                                                <option value="Neutral">Neutral</option>
-                                                <option value="Evil">Evil</option>
-                                            </select>
-                                        </div>
-                                        <textarea
-                                            placeholder="Faction description and history..."
-                                            value={faction.description}
-                                            onChange={(e) => updateFaction(index, 'description', e.target.value)}
-                                            rows={2}
+                                        <input
+                                            type="text"
+                                            placeholder="Faction Name"
+                                            value={faction.name}
+                                            onChange={(e) => updateFaction(index, 'name', e.target.value)}
                                             style={{
                                                 width: '100%',
                                                 padding: '10px',
@@ -547,21 +535,56 @@ function WorldCreator({ onSave, onCancel }) {
                                                 borderRadius: '6px',
                                                 fontSize: '14px',
                                                 marginBottom: '12px',
-                                                fontFamily: 'inherit',
                                                 background: 'white'
                                             }}
                                         />
-                                        <input
-                                            type="text"
-                                            placeholder="Goals and motivations..."
-                                            value={faction.goals}
-                                            onChange={(e) => updateFaction(index, 'goals', e.target.value)}
+                                        <select
+                                            value={faction.alignment}
+                                            onChange={(e) => updateFaction(index, 'alignment', e.target.value)}
                                             style={{
                                                 width: '100%',
                                                 padding: '10px',
                                                 border: '1px solid #d1d5db',
                                                 borderRadius: '6px',
                                                 fontSize: '14px',
+                                                marginBottom: '12px',
+                                                background: 'white'
+                                            }}
+                                        >
+                                            {ALIGNMENTS.map(align => (
+                                                <option key={align} value={align}>{align}</option>
+                                            ))}
+                                        </select>
+                                        <textarea
+                                            placeholder="Describe this faction..."
+                                            value={faction.description}
+                                            onChange={(e) => updateFaction(index, 'description', e.target.value)}
+                                            rows={3}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                fontSize: '14px',
+                                                fontFamily: 'inherit',
+                                                marginBottom: '12px',
+                                                resize: 'vertical',
+                                                background: 'white'
+                                            }}
+                                        />
+                                        <textarea
+                                            placeholder="Goals and motivations..."
+                                            value={faction.goals}
+                                            onChange={(e) => updateFaction(index, 'goals', e.target.value)}
+                                            rows={2}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                fontSize: '14px',
+                                                fontFamily: 'inherit',
+                                                resize: 'vertical',
                                                 background: 'white'
                                             }}
                                         />
@@ -711,7 +734,8 @@ function WorldCreator({ onSave, onCancel }) {
                                                 borderRadius: '6px',
                                                 fontSize: '14px',
                                                 fontFamily: 'inherit',
-                                                background: 'white'
+                                                background: 'white',
+                                                resize: 'vertical'
                                             }}
                                         />
                                     </div>
@@ -758,13 +782,13 @@ function WorldCreator({ onSave, onCancel }) {
                                 Custom Rules & Modifications
                             </label>
                             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>
-                                Any house rules, special mechanics, or rule modifications for this world
+                                Any house rules, banned content, or special modifications for this world
                             </p>
                             <textarea
                                 name="customRules"
                                 value={worldData.customRules}
                                 onChange={handleInputChange}
-                                placeholder="e.g., Magic is rare and feared, No resurrection spells, Modified resting rules..."
+                                placeholder="e.g., No flying races before level 5, critical hits deal max damage + roll, resurrection requires special quest..."
                                 rows={6}
                                 style={{
                                     width: '100%',
@@ -784,21 +808,22 @@ function WorldCreator({ onSave, onCancel }) {
                 return (
                     <div style={{ padding: '32px' }}>
                         <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px', color: '#111827' }}>
-                            World Preview
+                            Preview Your World
                         </h3>
 
-                        {/* Preview Card */}
+                        {/* World Header */}
                         <div style={{
-                            background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #16a34a 0%, #059669 100%)',
                             padding: '32px',
-                            color: 'white',
-                            marginBottom: '24px'
+                            borderRadius: '12px',
+                            marginBottom: '24px',
+                            color: 'white'
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-                                <Map size={40} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
                                 <div>
-                                    <h2 style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>{worldData.name}</h2>
+                                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                                        {worldData.name || 'Unnamed World'}
+                                    </h2>
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                                         <span style={{ padding: '4px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: '9999px', fontSize: '12px' }}>
                                             {worldData.theme}
@@ -809,21 +834,29 @@ function WorldCreator({ onSave, onCancel }) {
                                     </div>
                                 </div>
                             </div>
-                            <p style={{ fontSize: '16px', lineHeight: '1.6', opacity: 0.9 }}>{worldData.description}</p>
+                            <p style={{ fontSize: '16px', lineHeight: '1.6', opacity: 0.9 }}>
+                                {worldData.description || 'No description provided'}
+                            </p>
                         </div>
 
                         {/* Stats Grid */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
                             <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#16a34a' }}>{worldData.regions?.length || 0}</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#16a34a' }}>
+                                    {worldData.regions?.length || 0}
+                                </div>
                                 <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Regions</div>
                             </div>
                             <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#8b5cf6' }}>{worldData.factions?.length || 0}</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#8b5cf6' }}>
+                                    {worldData.factions?.length || 0}
+                                </div>
                                 <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Factions</div>
                             </div>
                             <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>{worldData.npcs?.length || 0}</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>
+                                    {worldData.npcs?.length || 0}
+                                </div>
                                 <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>NPCs</div>
                             </div>
                         </div>
@@ -836,7 +869,51 @@ function WorldCreator({ onSave, onCancel }) {
                                     {worldData.regions.map((region, i) => (
                                         <div key={i} style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
                                             <div style={{ fontWeight: '600', color: '#111827' }}>{region.name}</div>
-                                            {region.description && <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>{region.description}</div>}
+                                            {region.description && (
+                                                <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                                                    {region.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {worldData.factions.length > 0 && (
+                            <div style={{ marginBottom: '24px' }}>
+                                <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>Factions</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {worldData.factions.map((faction, i) => (
+                                        <div key={i} style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
+                                            <div style={{ fontWeight: '600', color: '#111827' }}>{faction.name}</div>
+                                            <div style={{ fontSize: '12px', color: '#8b5cf6', marginTop: '2px' }}>{faction.alignment}</div>
+                                            {faction.description && (
+                                                <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                                                    {faction.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {worldData.npcs.length > 0 && (
+                            <div style={{ marginBottom: '24px' }}>
+                                <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>Notable NPCs</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {worldData.npcs.map((npc, i) => (
+                                        <div key={i} style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
+                                            <div style={{ fontWeight: '600', color: '#111827' }}>{npc.name}</div>
+                                            {npc.title && (
+                                                <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '2px' }}>{npc.title}</div>
+                                            )}
+                                            {npc.description && (
+                                                <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                                                    {npc.description}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -844,12 +921,23 @@ function WorldCreator({ onSave, onCancel }) {
                         )}
 
                         {worldData.history && (
-                            <div style={{ background: '#fef3c7', padding: '24px', borderRadius: '12px', border: '2px solid #fbbf24' }}>
+                            <div style={{ background: '#fef3c7', padding: '24px', borderRadius: '12px', border: '2px solid #fbbf24', marginBottom: '24px' }}>
                                 <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#92400e' }}>
                                     Historical Overview
                                 </h4>
                                 <p style={{ fontSize: '14px', color: '#78350f', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                                     {worldData.history}
+                                </p>
+                            </div>
+                        )}
+
+                        {worldData.customRules && (
+                            <div style={{ background: '#fef2f2', padding: '24px', borderRadius: '12px', border: '2px solid #fca5a5' }}>
+                                <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#991b1b' }}>
+                                    Custom Rules
+                                </h4>
+                                <p style={{ fontSize: '14px', color: '#7f1d1d', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                    {worldData.customRules}
                                 </p>
                             </div>
                         )}
@@ -984,15 +1072,14 @@ function WorldCreator({ onSave, onCancel }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                padding: '12px 32px',
+                                padding: '12px 24px',
                                 background: '#16a34a',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '8px',
-                                fontWeight: '600',
+                                fontWeight: '500',
                                 fontSize: '16px',
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 6px rgba(22, 163, 74, 0.3)'
+                                cursor: 'pointer'
                             }}
                         >
                             Next
@@ -1005,15 +1092,14 @@ function WorldCreator({ onSave, onCancel }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                padding: '12px 32px',
-                                background: '#10b981',
+                                padding: '12px 24px',
+                                background: '#16a34a',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '8px',
-                                fontWeight: '600',
+                                fontWeight: '500',
                                 fontSize: '16px',
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)'
+                                cursor: 'pointer'
                             }}
                         >
                             <Check size={20} />

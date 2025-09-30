@@ -26,6 +26,7 @@ function HomePage() {
         classes: 0,
         races: 0,
         backgrounds: 0,
+        worlds: 0,
         totalCreations: 0
     });
 
@@ -38,12 +39,14 @@ function HomePage() {
             const classes = JSON.parse(localStorage.getItem('dnd-homebrew-classes') || '[]');
             const races = JSON.parse(localStorage.getItem('dnd-homebrew-races') || '[]');
             const backgrounds = JSON.parse(localStorage.getItem('dnd-homebrew-backgrounds') || '[]');
+            const worlds = JSON.parse(localStorage.getItem('dnd-homebrew-worlds') || '[]');  // ADD THIS
 
             setStats({
                 classes: classes.length,
                 races: races.length,
                 backgrounds: backgrounds.length,
-                totalCreations: classes.length + races.length + backgrounds.length
+                worlds: worlds.length,  // ADD THIS
+                totalCreations: classes.length + races.length + backgrounds.length + worlds.length  // UPDATE THIS
             });
         } catch (error) {
             console.error('Error loading user stats:', error);
@@ -91,10 +94,9 @@ function HomePage() {
             icon: Map,
             bgColor: '#dcfce7',
             textColor: '#16a34a',
-            link: '#',
+            link: '/worlds/create',
             stats: 0,
-            features: ['Coming Soon', 'Campaign Settings', 'Region Builder', 'Lore Management'],
-            comingSoon: true
+            features: ['Campaign Settings', 'Region Builder', 'Faction Management', 'Lore Creation']
         }
     ];
 
